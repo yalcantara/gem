@@ -1,5 +1,8 @@
 package com.gem.commons.mongo;
 
+import static com.gem.commons.Checker.checkParamIsPositive;
+import static com.gem.commons.Checker.checkParamNotNull;
+
 import java.net.UnknownHostException;
 import java.util.List;
 
@@ -10,16 +13,9 @@ import com.mongodb.MongoClient;
 public class Mongo {
 
 	public static void main(String[] args) {
-		Mongo m = new Mongo(12717);
-		
-		m.printDatabases();
 
-		Database db = m.getDatabase("carmarket");
-		Collection col = db.getCollection("sp_posts");
-		
-		col.print();
 	}
-
+	
 	private MongoClient client;
 
 	public Mongo() {
@@ -31,6 +27,8 @@ public class Mongo {
 	}
 
 	public Mongo(int port) {
+		checkParamIsPositive("port", port);
+		
 		try {
 			client = new MongoClient("localhost", port);
 		} catch (UnknownHostException e) {
@@ -39,6 +37,8 @@ public class Mongo {
 	}
 
 	public Database getDatabase(String name) {
+		checkParamNotNull("name", name);
+		
 		DB db = client.getDB(name);
 		return new Database(db);
 	}
