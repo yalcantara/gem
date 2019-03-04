@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -37,12 +38,59 @@ public class Json implements Iterable<String>, Serializable {
 		}
 	}
 
+	public static <T> T parse(String json, Class<T> clazz) {
+
+		try {
+
+			T obj = mapper.readValue(json, clazz);
+			return obj;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@SuppressWarnings("rawtypes")
 	public static Map toMap(String json) {
 		
 		try {
 			return mapper.readValue(json, LinkedHashMap.class);
 		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static String write(List list) {
+
+		if (list == null) {
+			return "null";
+		}
+		
+		if (list.size() == 0) {
+			return "[]";
+		}
+
+		try {
+			return writter.writeValueAsString(list);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static String write(Map map) {
+
+		if (map == null) {
+			return "null";
+		}
+		
+		if (map.isEmpty()) {
+			return "{}";
+		}
+
+		try {
+			return writter.writeValueAsString(map);
+		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -91,9 +139,21 @@ public class Json implements Iterable<String>, Serializable {
 			set(key, (Integer) val);
 			return;
 		}
+		
+		if (val instanceof Long) {
+			set(key, (Long) val);
+			return;
+		}
+		
+		throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
 	}
 	
 	public void set(String key, Integer val) {
+		checkParamNotNull("key", key);
+		map.put(key, val);
+	}
+
+	public void set(String key, Long val) {
 		checkParamNotNull("key", key);
 		map.put(key, val);
 	}
@@ -138,5 +198,10 @@ public class Json implements Iterable<String>, Serializable {
 	@Override
 	public Iterator<String> iterator() {
 		return map.keySet().iterator();
+	}
+
+	@Override
+	public String toString() {
+		return Json.write(map);
 	}
 }
