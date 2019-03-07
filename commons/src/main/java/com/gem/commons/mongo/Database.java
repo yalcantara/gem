@@ -1,28 +1,32 @@
 package com.gem.commons.mongo;
 
-import java.util.Set;
+import static com.gem.commons.Checker.checkParamNotNull;
+
+import org.bson.Document;
 
 import com.gem.commons.Grid;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class Database {
 	
-	private final DB db;
+	private final MongoDatabase db;
 
-	public Database(DB db) {
+	public Database(MongoDatabase db) {
+		checkParamNotNull("db", db);
 		this.db = db;
 	}
 
 	public Collection getCollection(String name) {
-		DBCollection col = db.getCollection(name);
+		checkParamNotNull("name", name);
+		MongoCollection<Document> col = db.getCollection(name);
 
 		return new Collection(col);
 	}
 	
 	public void printCollections() {
 
-		Set<String> names = db.getCollectionNames();
+		Iterable<String> names = db.listCollectionNames();
 		
 		Grid g = new Grid(names);
 		g.header(0, "Collections");

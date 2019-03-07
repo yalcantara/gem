@@ -6,46 +6,45 @@ import static com.gem.commons.Checker.checkParamNotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+
+import org.bson.Document;
 
 import com.gem.commons.Grid;
 import com.gem.commons.Json;
-import com.mongodb.AggregationOptions;
-import com.mongodb.AggregationOptions.Builder;
-import com.mongodb.AggregationOptions.OutputMode;
-import com.mongodb.Cursor;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 
 public class Collection {
 
 	public static final int DEFAULT_ROW_PRINT = 50;
 
-	private final DBCollection col;
+	private final MongoCollection<Document> col;
 
-	public Collection(DBCollection col) {
+	public Collection(MongoCollection<Document> col) {
 		checkParamNotNull("col", col);
 		this.col = col;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public List<Json> find(int max) {
+	public List<Document> find(int max) {
 		checkParamHigherThan("max", 0, max);
 		
-		DBCursor cur = col.find();
-		cur.limit(max);
-		
-		List<Json> arr = new ArrayList<>();
-		int count = 0;
-		while (cur.hasNext() && count < max) {
-			count++;
-			DBObject obj = cur.next();
+		FindIterable<Document> iter = col.find();
+		iter.limit(max);
 
-			Map map = obj.toMap();
+		List<Document> arr = new ArrayList<>();
 
-			Json json = new Json(map);
-			arr.add(json);
+		try (MongoCursor<Document> cur = iter.iterator()) {
+			int count = 0;
+			
+			// let us add another layer of safety by having a counter.
+			while (cur.hasNext() && count < max) {
+				count++;
+				Document bson = cur.next();
+				
+				arr.add(bson);
+			}
 		}
 
 		return arr;
@@ -54,36 +53,45 @@ public class Collection {
 	public long count(Json query) {
 		checkParamNotNull("query", query);
 
-		DBObject obj = Converter.toMongoObject(query);
-		return col.count(obj);
+		Document bson = Converter.toBson(query);
+		long count = col.countDocuments(bson);
+		return count;
 	}
 	
 	public void insert(Json json) {
 		checkParamNotNull("json", json);
 		
-		DBObject obj = Converter.toMongoObject(json);
-		col.insert(obj);
+		Document bson = Converter.toBson(json);
+		col.insertOne(bson);
 	}
 
-	public Cursor agregate(Json pipeline) {
+	public AggregateIterable<Document> agregate(Json pipeline) {
 		checkParamNotNull("pipeline", pipeline);
 		
-		Builder b = AggregationOptions.builder();
-		b.outputMode(OutputMode.INLINE);
+		Document bson = Converter.toBson(pipeline);
 
-		AggregationOptions options = b.build();
-		DBObject obj = Converter.toMongoObject(pipeline);
-		
-		Cursor ans = col.aggregate(Arrays.asList(obj), options);
+		AggregateIterable<Document> ans = col.aggregate(Arrays.asList(bson), Document.class);
 		return ans;
 	}
+	
+	public List<Document> agregateAndCollect(Json pipeline) {
+		
+		AggregateIterable<Document> agg = agregate(pipeline);
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+		List<Document> list = new ArrayList<>();
+		try (MongoCursor<Document> cur = agg.iterator()) {
+			while (cur.hasNext()) {
+				Document doc = cur.next();
+				list.add(doc);
+			}
+		}
+
+		return list;
+	}
+
 	public void print() {
 		
-		List<Json> json = find(DEFAULT_ROW_PRINT);
-		
-		List list = Json.convert(json);
+		List<Document> list = find(DEFAULT_ROW_PRINT);
 		
 		Grid g = Grid.wrap(list);
 		g.print();

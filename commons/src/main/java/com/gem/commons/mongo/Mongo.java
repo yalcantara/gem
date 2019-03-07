@@ -3,52 +3,67 @@ package com.gem.commons.mongo;
 import static com.gem.commons.Checker.checkParamIsPositive;
 import static com.gem.commons.Checker.checkParamNotNull;
 
-import java.net.UnknownHostException;
-import java.util.List;
+import java.io.Closeable;
 
 import com.gem.commons.Grid;
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 
-public class Mongo {
-
-	public static void main(String[] args) {
-
-	}
+public class Mongo implements Closeable {
 	
-	private MongoClient client;
+	private final MongoClient client;
 
 	public Mongo() {
-		try {
-			client = new MongoClient();
-		} catch (UnknownHostException e) {
-			throw new RuntimeException(e);
-		}
+		client = MongoClients.create();
 	}
 
 	public Mongo(int port) {
 		checkParamIsPositive("port", port);
-		
-		try {
-			client = new MongoClient("localhost", port);
-		} catch (UnknownHostException e) {
-			throw new RuntimeException(e);
-		}
+
+		StringBuilder sb = new StringBuilder("mongodb://localhost:");
+		sb.append(port);
+
+		String str = sb.toString();
+		client = MongoClients.create(str);
+	}
+
+	public Mongo(String host, int port) {
+		checkParamNotNull("host", host);
+		checkParamIsPositive("port", port);
+
+		StringBuilder sb = new StringBuilder("mongodb://");
+		sb.append(host);
+		sb.append(":");
+		sb.append(port);
+
+		String str = sb.toString();
+		client = MongoClients.create(str);
+	}
+
+	public Mongo(String connectionString) {
+		checkParamNotNull("connectionString", connectionString);
+		client = MongoClients.create(connectionString);
 	}
 
 	public Database getDatabase(String name) {
 		checkParamNotNull("name", name);
-		
-		DB db = client.getDB(name);
+
+		MongoDatabase db = client.getDatabase(name);
 		return new Database(db);
 	}
 
 	public void printDatabases() {
-		
-		List<String> names = client.getDatabaseNames();
-		
+
+		Iterable<String> names = client.listDatabaseNames();
+
 		Grid g = new Grid(names);
 		g.header(0, "Databases");
 		g.print();
+	}
+
+	@Override
+	public void close() {
+		client.close();
 	}
 }

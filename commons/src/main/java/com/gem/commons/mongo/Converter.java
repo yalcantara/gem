@@ -1,5 +1,9 @@
 package com.gem.commons.mongo;
 
+import java.util.Map.Entry;
+
+import org.bson.Document;
+
 import com.gem.commons.Json;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -20,5 +24,16 @@ public class Converter {
 		}
 		
 		return db;
+	}
+	
+	public static Document toBson(Json json) {
+		
+		Document b = new Document();
+
+		for (Entry<String, Object> ent : json.entrySet()) {
+			b.put(ent.getKey(), ent.getValue());
+		}
+		
+		return b;
 	}
 }
