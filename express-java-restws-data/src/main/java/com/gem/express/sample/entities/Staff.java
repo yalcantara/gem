@@ -1,13 +1,15 @@
 package com.gem.express.sample.entities;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * The persistent class for the staff database table.
@@ -34,7 +36,8 @@ public class Staff implements Serializable {
 	private String lastName;
 
 	@Column(name = "last_update")
-	private Timestamp lastUpdate;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastUpdate;
 	
 	private String username;
 
@@ -81,11 +84,11 @@ public class Staff implements Serializable {
 		this.lastName = lastName;
 	}
 
-	public Timestamp getLastUpdate() {
+	public Date getLastUpdate() {
 		return this.lastUpdate;
 	}
 
-	public void setLastUpdate(Timestamp lastUpdate) {
+	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
 

@@ -1,6 +1,7 @@
 package com.gem.express.sample.services;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -54,6 +55,7 @@ public class StaffService {
 		ent.setActive(active);
 		ent.setEmail(email);
 		ent.setUsername(username);
+		ent.setLastUpdate(new Date());
 		
 		em.persist(ent);
 		em.flush();
