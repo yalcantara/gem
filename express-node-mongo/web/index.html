@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>React Local</title>
+    
+    <link rel="stylesheet" href="static/botstrap/css/bootstrap.css">
+
+    <script type="text/javascript" src="static/react.development.js"></script>
+    <script type="text/javascript" src="static/react-dom.development.js"></script>
+    <script type="text/javascript" src="static/babel.js"></script>
+
+    <script type="text/javascript" src="static/popper.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/botstrap/js/bootstrap.js"></script>
+
+
+
+
+
+
+    <script type="text/babel" src="static/js/new-cust-dialog.js"></script>
+    <script type="text/javascript" src="static/js/rest.js"></script>
+
+</head>
+
+<body>
+
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#appModal">
+                New Customer
+        </button>
+
+    <div id="root">
+    </div>
+
+    <script type="text/babel">
+       
+
+        var rootElement = document.getElementById('root'); // Use the ReactDOM.render to show your component on the browser 
+        ReactDOM.render(<NewCustomerDialog id="appModal"/>, rootElement );
+
+    </script>
+
+</body>
+
+</html>
