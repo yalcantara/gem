@@ -1,7 +1,7 @@
 {
   "name": "express-node-mongo",
   "version": "1.0.0",
-  "description": "Sample proyect to get started quickly with node and mongodb.",
+  "description": "Sample project to get started quickly with node and mongodb.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
