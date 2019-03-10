@@ -2,17 +2,15 @@ package com.gem.commons.mongo;
 
 import static com.gem.commons.Checker.checkParamNotNull;
 
-import org.bson.Document;
-
 import com.gem.commons.Grid;
-import com.mongodb.client.MongoCollection;
+import com.gem.commons.Lazy;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDBImpl implements MongoDB {
 
-	private final MongoDatabase db;
+	private final Lazy<MongoDatabase> db;
 	
-	public MongoDBImpl(MongoDatabase db) {
+	public MongoDBImpl(Lazy<MongoDatabase> db) {
 		checkParamNotNull("db", db);
 		this.db = db;
 	}
@@ -20,20 +18,19 @@ public class MongoDBImpl implements MongoDB {
 	@Override
 	public Collection getCollection(String name) {
 		checkParamNotNull("name", name);
-		MongoCollection<Document> col = db.getCollection(name);
 		
-		return new Collection(col);
+		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name)));
 	}
 	
 	@Override
 	public Collection getCollection(String name, Class<?> documentClass) {
-		return new Collection(db.getCollection(name, documentClass));
+		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name, documentClass)));
 	}
 
 	@Override
 	public void printCollections() {
 		
-		Iterable<String> names = db.listCollectionNames();
+		Iterable<String> names = db.get().listCollectionNames();
 
 		Grid g = new Grid(names);
 		g.header(0, "Collections");

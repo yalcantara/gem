@@ -17,12 +17,12 @@ public class MongoService {
 
 		return new Mongo(host, port);
 	});
-	
+
 	public MongoDB getDatabase(String name) {
 		checkParamNotNull("name", name);
 		return client().getDatabase(name);
 	}
-
+	
 	public Mongo client() {
 		return _client.get();
 	}

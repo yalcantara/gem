@@ -10,16 +10,23 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
 import com.gem.commons.Grid;
+import com.gem.commons.Lazy;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoClientSettings.Builder;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
 
 public class Mongo implements Closeable {
 	
-	private final MongoClient client;
+	private final Lazy<MongoClient> client;
+
+	public static Collection proxyCollection(MongoDB db, String name, Class<?> documentClass) {
+		checkParamNotNull("db", db);
+		checkParamNotNull("name", name);
+		checkParamNotNull("documentClass", documentClass);
+		return Lazy.proxy(Collection.class, () -> db.getCollection(name, documentClass));
+	}
 
 	private static MongoClientSettings settings() {
 		return settings(null);
@@ -42,7 +49,7 @@ public class Mongo implements Closeable {
 	
 	public Mongo() {
 
-		client = MongoClients.create(settings());
+		client = Lazy.wrap(() -> MongoClients.create(settings()));
 	}
 
 	public Mongo(int port) {
@@ -59,31 +66,34 @@ public class Mongo implements Closeable {
 		sb.append(port);
 
 		String str = sb.toString();
-		client = MongoClients.create(str);
+		client = Lazy.wrap(() -> MongoClients.create(settings(str)));
 	}
 
 	public Mongo(String connectionString) {
 		checkParamNotNull("connectionString", connectionString);
-		client = MongoClients.create(settings(connectionString));
+		client = Lazy.wrap(() -> MongoClients.create(settings(connectionString)));
 	}
 
 	public MongoDB getDatabase(String name) {
 		checkParamNotNull("name", name);
-		MongoDatabase db = client.getDatabase(name);
-		return new MongoDBImpl(db);
+		return new MongoDBImpl(Lazy.wrap(() -> client.get().getDatabase(name)));
 	}
 
 	public void printDatabases() {
 
-		Iterable<String> names = client.listDatabaseNames();
+		Iterable<String> names = client.get().listDatabaseNames();
 
 		Grid g = new Grid(names);
 		g.header(0, "Databases");
 		g.print();
 	}
 
+	public MongoClient client() {
+		return client.get();
+	}
+
 	@Override
 	public void close() {
-		client.close();
+		client.get().close();
 	}
 }
