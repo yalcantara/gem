@@ -1,4 +1,4 @@
-package com.gem.config.ws.resources;
+package com.gem.config.ws.controllers;
 
 import java.net.URI;
 import java.util.List;
@@ -20,7 +20,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.springframework.stereotype.Component;
 
-import com.gem.commons.Json;
 import com.gem.commons.TxResult;
 import com.gem.config.ws.entities.App;
 import com.gem.config.ws.services.AppService;
@@ -41,34 +40,38 @@ public class AppResource {
 		
 		List<App> list = srv.list();
 		
-		String json = Json.write(list);
+		return Response.ok(list).build();
+	}
+	
+	@GET
+	@Path("/{name}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response get(@PathParam("name") String name) {
 		
-		return Response.ok(json).build();
+		App app = srv.get(name);
+		
+		return Response.ok(app).build();
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response create(String json) {
-
-		App data = Json.parse(json, App.class);
+	public Response create(App data) {
 
 		App app = srv.create(data);
-		long id = app.getId();
+		String name = app.getName();
 		
-		return Response.created(location(id)).build();
+		return Response.created(location(name)).build();
 	}
 	
 	@PUT
-	@Path("/{id}")
+	@Path("/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response update(@PathParam("id") long id, String json) {
-
-		App data = Json.parse(json, App.class);
-
-		TxResult<App> tx = srv.put(id, data);
+	public Response update(@PathParam("name") String name, App data) {
+		
+		TxResult<App> tx = srv.put(name, data);
 
 		if (tx.isCreated()) {
-			long ans = tx.getResult().getId();
+			String ans = tx.getResult().getName();
 			return Response.created(location(ans)).build();
 		}
 		
@@ -76,16 +79,16 @@ public class AppResource {
 	}
 
 	@DELETE
-	@Path("/{id}")
-	public Response delete(@PathParam("id") long id) {
+	@Path("/{name}")
+	public Response delete(@PathParam("name") String name) {
 
-		boolean ans = srv.delete(id);
+		boolean ans = srv.delete(name);
 		return Response.ok(String.valueOf(ans)).build();
 	}
 
-	private URI location(long id) {
+	private URI location(String name) {
 		UriBuilder b = info.getAbsolutePathBuilder();
-		b.path(String.valueOf(id));
+		b.path(name);
 		return b.build();
 	}
 }
