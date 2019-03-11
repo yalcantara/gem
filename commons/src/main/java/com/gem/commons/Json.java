@@ -142,40 +142,40 @@ public class Json implements Iterable<String>, Serializable {
 			String key = String.valueOf(e.getKey());
 			Object val = e.getValue();
 
-			set(key, val);
+			put(key, val);
 		}
 	}
 
-	public void set(String key, Object val) {
+	public void put(String key, Object val) {
 		if (val == null) {
-			set(key, (String) null);
+			put(key, (String) null);
 			return;
 		}
 
 		if (val instanceof Integer) {
-			set(key, (Integer) val);
+			put(key, (Integer) val);
 			return;
 		}
 
 		if (val instanceof Long) {
-			set(key, (Long) val);
+			put(key, (Long) val);
 			return;
 		}
 
 		throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
 	}
 
-	public void set(String key, Integer val) {
+	public void put(String key, Integer val) {
 		checkParamNotNull("key", key);
 		map.put(key, val);
 	}
 	
-	public void set(String key, Long val) {
+	public void put(String key, Long val) {
 		checkParamNotNull("key", key);
 		map.put(key, val);
 	}
 
-	public void set(String key, String val) {
+	public void put(String key, String val) {
 		checkParamNotNull("key", key);
 		map.put(key, val);
 	}
