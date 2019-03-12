@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Config</title>
+
+    <link rel="stylesheet" href="/static/vendors/botstrap/css/bootstrap.css">
+
+    <script type="text/javascript" src="/static/vendors/jquery.js"></script>
+    <script type="text/javascript" src="/static/vendors/botstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/vendors/babel.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/popper.js"></script>
+
+
+    <!-- App scripts -->
+    <script type="text/javascript" src="/static/js/rest.js"></script>
+
+    <script type="text/javascript">
+
+    
+        jQuery(document).ready(function(){
+            jQuery('#userInput').focus();
+        });
+
+        function login(){
+            var user = jQuery('#userInput').val();
+            var pass = jQuery('#passInput').val();
+
+            var cred = {user: user, pass: pass};
+
+            rest.post('/rest/login', cred).then(function(){
+                console.log('Usuario hizo login.');
+            }).catch(function(){
+                console.log('Error al hacer login.');
+            });
+
+        }
+        
+    </script>
+
+</head>
+<body style="display: flex; justify-content: center;">
+    <div class="border rounded" style="margin-top: 120px; padding: 10px 15px">
+        <h3>Sing In</h3>
+        <div style="width: 300px;">
+                <form onsubmit="return false;">
+                    <div class="form-group">
+                        <label style="width: 100%">
+                            Username: * <input id="userInput" class="form-control" type="text" placeholder="Ex.: jhon12"/>
+                        </label>
+                        <div style="display: none"></div>
+                    </div>
+                    <div class="form-group">
+                        <label style="width: 100%">
+                            Password:  <input id="passInput" class="form-control" type="password"/>
+                        </label>
+                    </div>
+                    <div class="form-group" style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="login()">Sign In</button>
+                    </div>
+                </form>
+            </div>
+    </div>
+
+    
+    
+
+
+</body>
+</html>

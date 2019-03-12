@@ -1,0 +1,11 @@
+{
+  "name": "config-ui",
+  "version": "1.0.0",
+  "description": "The web GUI for app configurations.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yaison Alcantara",
+  "license": "ISC"
+}
