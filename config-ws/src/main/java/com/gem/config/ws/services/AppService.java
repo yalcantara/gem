@@ -110,23 +110,22 @@ public class AppService {
 		checkName(newName);
 		
 		Query q = new Query();
+		q.filter("name", name);
+		
 		q.update("name", newName);
 		q.update("label", app.getLabel());
 		q.update("lastUpdate", new Date());
 		
-		App old = (App) apps.update("name", name, q);
+		long count = apps.update(q);
 		
-		if (old == null) {
-			throw new ConflictException("The app was deleted while processing it.");
+		if (count == 1) {
+			App ans = new App();
+			ans.setName(newName);
+			
+			return new TxResult<App>(false, ans);
 		}
 		
-		// let us return the 2 most important fields for later use of
-		// finding this resource.
-		App ans = new App();
-		ans.setId(old.getId());
-		ans.setName(newName);
-		
-		return new TxResult<App>(false, ans);
+		throw new ConflictException("The app set have been previously modified.");
 	}
 
 	public boolean delete(String name) {

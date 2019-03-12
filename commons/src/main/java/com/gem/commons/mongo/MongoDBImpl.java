@@ -7,34 +7,35 @@ import com.gem.commons.Lazy;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDBImpl implements MongoDB {
-
-	private final Lazy<MongoDatabase> db;
 	
+	private final Lazy<MongoDatabase> db;
+
 	public MongoDBImpl(Lazy<MongoDatabase> db) {
 		checkParamNotNull("db", db);
 		this.db = db;
 	}
-	
+
 	@Override
 	public Collection getCollection(String name) {
 		checkParamNotNull("name", name);
-		
+
 		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name)));
+	}
+
+	@Override
+	public Collection getCollection(String name, Class<?> documentClass) {
+		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name, documentClass)),
+				documentClass);
 	}
 	
 	@Override
-	public Collection getCollection(String name, Class<?> documentClass) {
-		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name, documentClass)));
-	}
-
-	@Override
 	public void printCollections() {
-		
-		Iterable<String> names = db.get().listCollectionNames();
 
+		Iterable<String> names = db.get().listCollectionNames();
+		
 		Grid g = new Grid(names);
 		g.header(0, "Collections");
 		g.print();
 	}
-
+	
 }
