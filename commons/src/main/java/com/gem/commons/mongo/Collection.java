@@ -13,12 +13,19 @@ public interface Collection {
 	int DEFAULT_ROW_PRINT = 50;
 	
 	@SuppressWarnings("rawtypes")
+	public List find();
+
+	@SuppressWarnings("rawtypes")
 	List find(int max);
 
 	@SuppressWarnings("rawtypes")
 	List find(Query query);
+
+	<T> List<T> find(Query query, Class<T> resultClass);
 	
-	Object findOne(String key, String val);
+	Object findOne(String filterKey, Object filterValue);
+	
+	<T> T findOne(Query query, Class<T> resultClass);
 	
 	long count(Json query);
 	
@@ -26,13 +33,15 @@ public interface Collection {
 	
 	void insert(Object entity);
 	
-	Object update(String key, Object id, Json query);
+	long update(String filterKey, Object filterValue, Json query);
+
+	long update(String filterKey, Object filterValue, Document query);
 	
-	Object update(String key, Object id, Query query);
+	long update(Query query);
 	
-	Object update(String key, Object id, Document query);
-	
-	boolean deleteOne(String key, Object id);
+	boolean deleteOne(String filterKey, Object filterValue);
+
+	boolean deleteOne(Query query);
 	
 	AggregateIterable<Document> agregate(Json pipeline);
 	
