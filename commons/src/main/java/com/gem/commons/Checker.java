@@ -1,14 +1,31 @@
 package com.gem.commons;
 
+import javax.ws.rs.BadRequestException;
+
 public class Checker {
 	
 	private Checker() {
 
 	}
+
+	public static void checkPathParam(String name, Object value) {
+		checkPathParam(name, value,
+			"The segment '" + name + "' was not specified in the URL path.");
+	}
+	
+	public static void checkPathParam(String name, Object value, String message) {
+		if (value == null) {
+			throw new BadRequestException(message);
+		}
+	}
 	
 	public static void checkParamNotNull(String name, Object value) {
+		checkParamNotNull(name, value, "The parameter '" + name + "' can not be null.");
+	}
+	
+	public static void checkParamNotNull(String name, Object value, String message) {
 		if (value == null) {
-			throw new NullPointerException("The parameter '" + name + "' can not be null.");
+			throw new NullPointerException(message);
 		}
 	}
 

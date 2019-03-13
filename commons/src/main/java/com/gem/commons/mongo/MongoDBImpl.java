@@ -2,40 +2,41 @@ package com.gem.commons.mongo;
 
 import static com.gem.commons.Checker.checkParamNotNull;
 
+import org.bson.Document;
+
 import com.gem.commons.Grid;
 import com.gem.commons.Lazy;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDBImpl implements MongoDB {
-	
-	private final Lazy<MongoDatabase> db;
 
-	public MongoDBImpl(Lazy<MongoDatabase> db) {
+	private final MongoDatabase db;
+	
+	public MongoDBImpl(MongoDatabase db) {
 		checkParamNotNull("db", db);
 		this.db = db;
 	}
-
+	
 	@Override
 	public Collection getCollection(String name) {
-		checkParamNotNull("name", name);
-
-		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name)));
-	}
-
-	@Override
-	public Collection getCollection(String name, Class<?> documentClass) {
-		return new CollectionImpl(Lazy.wrap(() -> db.get().getCollection(name, documentClass)),
-				documentClass);
+		return getCollection(name, Document.class);
 	}
 	
 	@Override
-	public void printCollections() {
+	public Collection getCollection(String name, Class<?> documentClass) {
+		Collection proxy = Lazy.proxy(Collection.class,
+			() -> new CollectionImpl(db.getCollection(name, documentClass), documentClass));
+		return proxy;
+	}
 
-		Iterable<String> names = db.get().listCollectionNames();
+	@Override
+	public void printCollections() {
 		
+		Iterable<String> names = db.listCollectionNames();
+
 		Grid g = new Grid(names);
 		g.header(0, "Collections");
 		g.print();
 	}
-	
+
 }
