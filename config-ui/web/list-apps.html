@@ -15,12 +15,11 @@
     <script type="text/javascript" src="/static/vendors/moment.js"></script>
     <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
 
-
      <!-- App scripts -->
     <script type="text/javascript" src="/apps.js"></script>
     <script type="text/javascript" src="/static/js/utils.js"></script>
     <script type="text/babel" src="/static/js/new-app-dialog.js"></script>
-    <script type="text/babel" src="/static/js/list-apps.js"></script>
+    <script type="text/babel" src="/static/js/list-app-view.js"></script>
 
 
     <style type="text/css">
@@ -38,47 +37,15 @@
 
         .table thead{
            font-weight: bold;
+           text-align: center;
         } 
     </style>
 
     <script type="text/babel">
 
-
-
-        function RenderRow(row){
-            return (
-                <tr key={row._id.$oid}>
-                    <td><i className="fa fa-times" style={{color: 'red', cursor: 'pointer'}}/></td>
-                    <td><a href="#">{row.name}</a></td>
-                    <td>{row.label}</td>
-                    <td>{moment(new Date(row.lastUpdate)).fromNow()}</td>
-                    <td>{formatDate(row.creationDate)}</td>
-                </tr>
-            );
-        }
-
-        function ListTable(params) {
-            return (
-                <table className="table table-striped table-bordered table-hover table-md">
-                    <thead>
-                        <tr>
-                            <td></td>
-                            <td>Name</td>
-                            <td>Label</td>
-                            <td>Last Update</td>
-                            <td>Creation Date</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {apps.map(RenderRow)}
-                    </tbody>
-                </table>
-            );
-        }
-
         ReactDOM.render(<NewAppDialog id="newAppModal"/>, document.getElementById('dialog-holder'));
 
-        ReactDOM.render(<ListTable/>, document.getElementById('app-list'));
+        ReactDOM.render(<ListAppView apps={apps} createModal="newAppModal"/>, document.getElementById('app-list'));
     </script>
 </head>
 
@@ -89,16 +56,8 @@
 
     </div>
 
-    <div  style="width: 600px;">
-        <div style="display: flex; justify-content: flex-start;">
-            <a href="#" data-toggle="modal" data-target="#newAppModal">
-                <i class="fas fa-plus-circle"></i>
-                Create
-            </a>
-        </div>
-        <div id="app-list">
+    <div id="app-list" style="width: 700px;">
     
-        </div>
     </div>
 
 </body>

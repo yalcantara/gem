@@ -17,11 +17,12 @@ class NewAppDialog extends React.Component {
         this.save = this.save.bind(this);
 
         this.jsx = (
-            <div id={props.id} ref={this.html.modal} className="modal fade modal-sm" style={{margin: '0px auto'}} tabIndex="-1" role="dialog">
+            <div id={props.id} ref={this.html.modal} className="modal fade modal-sm" style={{margin: '0px auto'}}
+                tabIndex="-1" role="dialog" aria-labelledby={props.id +'-label'} aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-sm " role="document">
                     <div className="modal-content">
                         <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title">Create New App</span>
+                            <span className="modal-title" id={props.id +'-label'}>Create New App</span>
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
