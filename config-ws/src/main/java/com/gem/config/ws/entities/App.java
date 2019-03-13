@@ -23,7 +23,7 @@ public class App implements Serializable {
 	private String name;
 
 	private String label;
-	
+
 	private Date creationDate;
 	
 	private Date lastUpdate;

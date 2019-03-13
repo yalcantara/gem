@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -26,7 +27,7 @@ import com.gem.config.ws.services.AppService;
 
 @Component
 @Path("/apps")
-public class AppResource {
+public class AppController {
 	
 	@Inject
 	private AppService srv;
@@ -48,17 +49,21 @@ public class AppResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response get(@PathParam("name") String name) {
 
-		App app = srv.get(name);
-
-		return Response.ok(app).build();
+		App dto = srv.get(name);
+		
+		if (dto == null) {
+			throw new NotFoundException("The app '" + name + "' does not exist.");
+		}
+		
+		return Response.ok(dto).build();
 	}
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response create(App data) {
 		
-		App app = srv.create(data);
-		String name = app.getName();
+		App dto = srv.create(data);
+		String name = dto.getName();
 
 		return Response.created(location(name)).build();
 	}

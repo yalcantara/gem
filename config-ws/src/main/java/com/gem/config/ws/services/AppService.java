@@ -27,11 +27,11 @@ public class AppService {
 	@SuppressWarnings("unchecked")
 	public List<App> list() {
 
-		return apps.find(1000);
+		return apps.find();
 	}
 	
 	public App get(String name) {
-
+		checkParamNotNull("name", name);
 		return (App) apps.findOne("name", name);
 	}
 	
