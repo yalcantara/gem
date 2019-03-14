@@ -1,11 +1,13 @@
 class NewAppDialog extends React.Component { 
             
-
+    props = {};
     
     constructor(props) { 
         super(props); 
         this.state = {}; 
         this.state.name = ''; 
+
+        this.props = props;
 
         this.html = {};
         this.html.modal = React.createRef();
@@ -16,40 +18,6 @@ class NewAppDialog extends React.Component {
 
         this.save = this.save.bind(this);
 
-        this.jsx = (
-            <div id={props.id} ref={this.html.modal} className="modal fade modal-sm" style={{margin: '0px auto'}}
-                tabIndex="-1" role="dialog" aria-labelledby={props.id +'-label'} aria-hidden="true">
-                <div className="modal-dialog modal-dialog-centered modal-sm " role="document">
-                    <div className="modal-content">
-                        <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title" id={props.id +'-label'}>Create New App</span>
-                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <form ref={this.html.form}>
-                                <div className="form-group">
-                                    <label style={{width: '100%'}}>
-                                        Name: * <input ref={this.html.name} className="form-control" type="text"/>
-                                    </label>
-                                    <div ref={this.html.msg} style={{display: 'none'}}></div>
-                                </div>
-                                <div className="form-group">
-                                    <label style={{width: '100%'}}>
-                                        Label:  <input ref={this.html.label} className="form-control" type="text"/>
-                                    </label>
-                                </div>
-                            </form>
-                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                <button type="button" className="btn btn-default" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
-                                <button onClick={this.save} type="button" className="btn btn-primary btn-success">Save</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
     } 
 
     beforeShow(){
@@ -109,6 +77,39 @@ class NewAppDialog extends React.Component {
     }
     
     render() { 
-        return (this.jsx); 
+        return (
+            <div id={this.props.id} ref={this.html.modal} className="modal fade"
+                tabIndex="-1" role="dialog" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
+                            <span className="modal-title">Create New App</span>
+                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <form ref={this.html.form}>
+                                <div className="form-group">
+                                    <label style={{width: '100%'}}>
+                                        Name: * <input ref={this.html.name} className="form-control" type="text"/>
+                                    </label>
+                                    <div ref={this.html.msg} style={{display: 'none'}}></div>
+                                </div>
+                                <div className="form-group">
+                                    <label style={{width: '100%'}}>
+                                        Label:  <input ref={this.html.label} className="form-control" type="text"/>
+                                    </label>
+                                </div>
+                            </form>
+                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
+                                <button onClick={this.save} type="button" className="btn btn-success">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ); 
     } 
 } 

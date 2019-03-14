@@ -4,10 +4,7 @@ if(typeof(window.rest) === 'undefined' || window.rest == null){
 }
 
 rest.post = function(url, data){
-        
-
     var p = new Promise(function(resolve, reject){
-
         jQuery.ajax({
             method: 'POST',
             url: url,
@@ -31,6 +28,23 @@ rest.post = function(url, data){
                 }else{
                     resolve(data, status, jqXHR);
                 }
+            },
+            error: function(jqXHR, status, error){
+                reject(jqXHR, status, error);
+            }
+        });
+    });
+
+    return p;
+}
+
+rest.httpDelete = function(url){
+    var p = new Promise(function(resolve, reject){
+        jQuery.ajax({
+            method: 'DELETE',
+            url: url,
+            success: function(data, status, jqXHR){
+                resolve(data, status, jqXHR);
             },
             error: function(jqXHR, status, error){
                 reject(jqXHR, status, error);

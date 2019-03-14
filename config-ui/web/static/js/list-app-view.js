@@ -14,21 +14,40 @@ class ListAppView extends React.Component {
         this.state.apps = props.apps.slice(0);
         utils.sortField(this.state.apps, 'name');
     }
-    render() {
-        const RenderRow = function (row) {
-            return (
-                <tr key={row._id.$oid}>
-                    <td >
-                        <div style={{flexDirection: 'row', display: 'flex'}}>
 
-                        <div  style={{backgroundImage: "url('/static/icons/16x16/silk/pencil.png')", width: '16px', height: '16px', marginRight: '10px'}}></div>
-                        <div  style={{backgroundImage: "url('/static/icons/16x16/silk/cross.png')", width: '16px', height: '16px'}}></div>
+
+    remove(app){
+        var c;
+        c = "Are you sure you want to ";
+        c += "<span style='font-weight: bold; color: red'>delete</span> ";
+        c += "the app <span style='font-weight: bold;'>";
+        c += app.name;
+        c += "</span>.";
+
+        var self = this;
+        showConfirmDialog({content: c}).then(()=>{
+           // rest.httpDelete('/apps/' + app.name).then(()=>{
+                var arr = utils.findAndDelete(self.state.apps, 'name', app.name);
+                self.setState({apps: arr});
+            //});
+        });
+    }
+
+    render() {
+        var self = this;
+        const RenderRow = function (app) {
+            return (
+                <tr key={app._id.$oid}>
+                    <td style={{padding: '0px'}}>
+                        <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center'}}>
+                            <i  className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
+                            <i onClick={()=>{self.remove(app)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
-                    <td><a href="#">{row.name}</a></td>
-                    <td>{row.label}</td>
-                    <td>{moment(new Date(row.lastUpdate)).fromNow()}</td>
-                    <td style={{textAlign: 'right'}}>{utils.formatDate(row.creationDate)}</td>
+                    <td><a href="#">{app.name}</a></td>
+                    <td>{app.label}</td>
+                    <td>{moment(new Date(app.lastUpdate)).fromNow()}</td>
+                    <td style={{textAlign: 'right'}}>{utils.formatDate(app.creationDate)}</td>
                 </tr>
             );
         };
@@ -41,10 +60,10 @@ class ListAppView extends React.Component {
                         Create
                     </a>
                 </div>
-                <table className="table table-striped table-bordered table-hover table-md">
+                <table className="table table-striped table-bordered table-hover table-condensed">
                     <thead>
                         <tr>
-                            <td></td>
+                            <td style={{width: '60px'}}></td>
                             <td>Name</td>
                             <td>Label</td>
                             <td>Last Update</td>
