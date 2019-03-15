@@ -2,7 +2,10 @@
 class ConfirmDialog extends React.Component{
 
 
-
+    confirmCallback = null;
+    state = {
+        title: 'Confirm'
+    };
 
     constructor(props){
         super(props);
@@ -12,11 +15,22 @@ class ConfirmDialog extends React.Component{
         this.html.confirmBtn = React.createRef();
     }
 
+    hide = ()=>{
+        jQuery('#confirmModal').modal('hide');
+    }
+
+    confirm = ()=>{
+        if(this.confirmCallback){
+            this.confirmCallback();
+            this.hide();
+        }
+    }
 
     componentDidMount(){
 
+        var self = this;
         var h = this.html.content.current;
-        var ok = this.html.confirmBtn;
+      
 
         window.showConfirmDialog = function(settings){
 
@@ -26,15 +40,12 @@ class ConfirmDialog extends React.Component{
                     if(settings.content){
                         h.innerHTML = settings.content;
                     }
+
+                    if(settings.title){
+                        self.setState({title: settings.title});
+                    }
                 }
-
-                var clone = ok.cloneNode(true);
-                ok.parentNode.replaceChild(clone, ok); //a ninja way to remove all the event listeners.
-                ok.addEventListener('click', (event)=>{
-                    resolve(event);
-                });
-
-
+                self.confirmCallback = resolve;
 
 
                 jQuery('#confirmModal').modal();
@@ -51,7 +62,7 @@ class ConfirmDialog extends React.Component{
                 <div className="modal-dialog modal-dialog-centered modal-sm " role="document">
                     <div className="modal-content">
                         <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title" id="confirmDialog-label">Confirm</span>
+                            <span className="modal-title" id="confirmDialog-label">{this.state.title}</span>
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -62,7 +73,7 @@ class ConfirmDialog extends React.Component{
                             </div>
                             <div style={{display: 'flex', justifyContent: 'center'}}>
                                 <button className="btn btn-secondary" type="button" data-dismiss="modal" style={{marginRight: '5px'}}>Cancel</button>
-                                <button onClick={this.save} ref={this.html.confirmBtn} className="btn btn-danger" type="button">Confirm</button>
+                                <button onClick={this.confirm} ref={this.html.confirmBtn} className="btn btn-danger" type="button">Confirm</button>
                             </div>
                         </div>
                     </div>
