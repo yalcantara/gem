@@ -25,7 +25,7 @@ class ListAppView extends React.Component {
         c += "</span>.";
 
         var self = this;
-        showConfirmDialog({content: c}).then(()=>{
+        showConfirmDialog({content: c, title: 'Delete App'}).then(()=>{
            // rest.httpDelete('/apps/' + app.name).then(()=>{
                 var arr = utils.findAndDelete(self.state.apps, 'name', app.name);
                 self.setState({apps: arr});
