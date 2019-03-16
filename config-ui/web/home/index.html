@@ -1,0 +1,48 @@
+<html>
+
+<head>
+
+
+    <!-- Generic Static Resources -->
+    <link rel="stylesheet" href="/static/vendors/botstrap/css/bootstrap.css">
+
+    <script type="text/javascript" src="/static/vendors/jquery.js"></script>
+    <script type="text/javascript" src="/static/vendors/popper.js"></script>
+    <script type="text/javascript" src="/static/vendors/botstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/vendors/babel.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/moment.js"></script>
+    <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
+
+     <!-- App scripts -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <script type="text/javascript" src="/static/js/utils.js"></script>
+    <script type="text/babel" src="/static/js/confirm-dialog.js"></script>
+    <script type="text/babel" src="/static/js/new-app-dialog.js"></script>
+    <script type="text/babel" src="/static/js/list-app-view.js"></script>
+    
+    <script type="text/javascript" src="/home/apps.js"></script>
+
+    <script type="text/babel">
+        ReactDOM.render(<ConfirmDialog/>, document.getElementById('confirm-dialog-holder'));
+        ReactDOM.render(<NewAppDialog id="newAppModal"/>, document.getElementById('new-app-dialog-holder'));
+
+        ReactDOM.render(<ListAppView apps={apps} createModal="newAppModal"/>, document.getElementById('app-list'));
+    </script>
+</head>
+
+
+<body style="display: flex; justify-content: center; padding-top: 50px;">
+
+    
+    <div id="confirm-dialog-holder"></div>
+    <div id="new-app-dialog-holder"></div>
+
+    <div id="app-list" style="width: 700px;">
+    
+    </div>
+
+</body>
+</html>

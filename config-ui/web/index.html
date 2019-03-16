@@ -16,133 +16,28 @@
     <script type="text/javascript" src="/static/vendors/babel.js"></script>
     <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
     <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
 
 
     <!-- App scripts -->
     <script type="text/javascript" src="/static/js/utils.js"></script>
     <script type="text/javascript" src="/static/js/rest.js"></script>
 
-    <script type="text/javascript">
+    <script type="text/babel" src="/static/js/login-form.js"></script>
 
-        function handleKeyPress(){
-            var key = event.key;
-            var which = event.which;
-            if(which == 'Enter' || which == 13){
-                login();
-            }
-        }
-    
-        jQuery(document).ready(function(){
-            var userInput = jQuery('#userInput');
-            var passInput = jQuery('#passInput');
-            if(localStorage){
-                var user = localStorage.getItem('user');
-                if(user){
-                    userInput.val(user);
-                    passInput.focus();
-                }else{
-                    userInput.focus();
-                }
-            }else{
-                userInput.focus();
-            }
-
-
-            userInput.on('keypress', handleKeyPress);
-            passInput.on('keypress', handleKeyPress);
-        });
-
-
-        function processinState(){
-            var userInput = jQuery('#userInput');
-            var passInput = jQuery('#passInput');
-            var btn = jQuery('#loginBtn');
-
-            userInput.prop('disabled', true);
-            passInput.prop('disabled', true);
-
-            btn.prop('disabled', true);
-            btn.html('Log in...');
-        }
-
-        function initalState(){
-            var userInput = jQuery('#userInput');
-            var passInput = jQuery('#passInput');
-            var btn = jQuery('#loginBtn');
-
-            userInput.prop('disabled', false);
-            passInput.prop('disabled', false);
-            btn.prop('disabled', false);
-            btn.html('Log in');
-        }
-
-        function login(){
-            var userInput = jQuery('#userInput');
-            var passInput = jQuery('#passInput');
-            var h = jQuery('#errorHolder');
-
-            var user = userInput.val();
-            var pass = passInput.val();
-
-            var cred = {user: user, pass: pass};
-
-
-            processinState();
-            rest.post('/rest/login', cred).then(function(){
-                initalState();
-                passInput.val('');
-                h.css('display', 'none');
-                if(localStorage){
-                    localStorage.setItem('login.user', user);
-                    localStorage.setItem('login.storageDate', new Date().getTime());
-                }
-
-            }).catch(function(jqXHR, status, error){
-                initalState();
-                h.css('display', 'block');
-                h.html(jqXHR.responseText);
-
-           
-                passInput.val('');
-                passInput.focus();
-                
-            });
-
-        }
-        
+    <script type="text/babel">
+        ReactDOM.render(<LoginForm/>, document.getElementById('form-holder'));
     </script>
 
 </head>
 <body style="display: flex; justify-content: center;">
 
 
-
-    <div class="border rounded" style="margin-top: 120px; padding: 10px 15px">
+    <div class="border rounded" style="margin-top: 100px; padding: 10px 15px">
         <span style="font-size: 20px; font-weight: bold;">Log in to Config</span>
-        <div style="width: 300px; margin-top: 20px;">
-                <form onsubmit="return false;">
-                    <div class="form-group">
-                        <label style="width: 100%">
-                            Username: <input id="userInput" class="form-control" type="text" placeholder="Ex.: jhon12"/>
-                        </label>
-                        <div style="display: none"></div>
-                    </div>
-                    <div class="form-group">
-                        <label style="width: 100%">
-                            Password:  <input id="passInput" class="form-control" type="password"/>
-                        </label>
-                    </div>
-                    <div id="errorHolder" class="alert alert-danger" style="display: none"></div>
-                    <div class="form-group" style="display: flex; justify-content: flex-end;">
-                            <button id="loginBtn"  type="button"  onclick="login()" class="btn btn-primary">Log in</button>
-                    </div>
-                </form>
-            </div>
+        <div id="form-holder" style="width: 300px; margin-top: 20px;">
+                
+        </div>
     </div>
-
-    
-    
-
-
 </body>
 </html>

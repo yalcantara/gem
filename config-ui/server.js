@@ -1,6 +1,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const proxy = require('http-proxy-middleware');
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.get('/', (req, res)=>{
     res.send('hello');
 });
 
-app.post('/rest/login', (req, res)=>{
+app.post('/rest/sec/login', (req, res)=>{
 
     setTimeout(function(){
         var cred = req.body;
@@ -27,14 +28,23 @@ app.post('/rest/login', (req, res)=>{
         }
     
         res.status(401).send('Username and password does not match.');
-    }, 3000);
-
-    
+    }, 1000);
 });
+
+
+
+
+app.use('/rest/api', proxy({target: 'http://localhost:8080', pathRewrite: {'/rest/api/apps': '/rest/apps'}}));
+
+
 
 
 app.use('/config', express.static('web'));
 app.use('/config/', express.static('web'));
+
+app.use('/home', express.static('web/home'));
+app.use('/home/', express.static('web/home'));
+
 app.use('/static', express.static('web/static'));
 app.listen(port, ()=>{
     console.log('Listening on port: ' + port +'.')

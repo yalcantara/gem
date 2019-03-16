@@ -26,10 +26,10 @@ class ListAppView extends React.Component {
 
         var self = this;
         showConfirmDialog({content: c, title: 'Delete App'}).then(()=>{
-           // rest.httpDelete('/apps/' + app.name).then(()=>{
+            rest.httpDelete('/rest/apps/' + app.name).then(()=>{
                 var arr = utils.findAndDelete(self.state.apps, 'name', app.name);
                 self.setState({apps: arr});
-            //});
+            });
         });
     }
 

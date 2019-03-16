@@ -5,6 +5,28 @@ if(typeof(window.utils) === 'undefined' || window.utils == null){
 
 
 
+utils.packEmail = function(arg){
+    var str;
+    if(arg instanceof jQuery){
+        str = val();
+    }else{
+        str = arg;
+    }
+
+    var lower = str.toLowerCase();
+    var ans = '';
+    for(var i =0; i < str.length; i++){
+        var c = lower[i];
+        var o = str[i];
+
+        if((c >= 'a' && c <= 'z') || c == '@' || c == '_' || c == '.' || c == ''){
+            ans += o;
+        }
+    }
+
+    return ans;
+};
+
 utils.findAndDelete = function(arr, field, val){
     var ans = [];
     if(arr && arr.length > 0){

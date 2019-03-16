@@ -32,7 +32,7 @@ class NewAppDialog extends React.Component {
     validate(){
         var form = this.html.form.current;
         var msg = this.html.msg.current;
-        var nameInput = this.html.name.current
+        var nameInput = this.html.name.current;
         var name = this.html.name.current.value;
 
         if(name == null || name == '' || name.trim() == ''){
@@ -40,9 +40,7 @@ class NewAppDialog extends React.Component {
             msg.className = 'invalid-feedback';
             msg.style.display = 'block';
             msg.innerHTML = 'The app name is required.';
-            setTimeout(function(){
-                nameInput.focus();
-            });
+            nameInput.focus();
             
             return false;
         }
@@ -61,14 +59,18 @@ class NewAppDialog extends React.Component {
             
             var app = {name: name, label: label};
 
-            
+            rest.postAndGet('/rest/api/apps', app).then(function(){
+
+            });
         }
     } 
     
     componentDidMount() {
         const self = this;
+        var nameInput = jQuery(this.html.nameInput.current);
         jQuery(this.html.modal.current).on('shown.bs.modal', function(){
-            self.html.name.current.focus();
+            nameInput.focus();
+            
         });
 
         jQuery(this.html.modal.current).on('show.bs.modal', function(){
