@@ -1,6 +1,9 @@
 class NewAppDialog extends React.Component { 
             
     props = {};
+
+    form = null;
+    errorHolder = null;
     
     constructor(props) { 
         super(props); 
@@ -15,6 +18,7 @@ class NewAppDialog extends React.Component {
         this.html.name = React.createRef();
         this.html.msg = React.createRef();
         this.html.label = React.createRef();
+        this.html.errorHolder = React.createRef();
 
         this.save = this.save.bind(this);
 
@@ -27,10 +31,11 @@ class NewAppDialog extends React.Component {
         nameInput.value = '';
         nameInput.classList.remove('is-invalid');
         msg.style.display = 'none';
+        this.errorHolder.css('display', 'none');
     }
 
     validate(){
-        var form = this.html.form.current;
+        
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current;
         var name = this.html.name.current.value;
@@ -53,24 +58,49 @@ class NewAppDialog extends React.Component {
     
     save(event) {
         
-        if(this.validate()){
-            var name = this.html.name.current.value;
-            var label = this.html.label.current.value;
-            
-            var app = {name: name, label: label};
-
-            rest.postAndGet('/rest/api/apps', app).then(function(){
-
-            });
+        if(this.validate() == false){
+            return;
         }
+
+        var name = this.html.name.current.value;
+        var label = this.html.label.current.value;
+        
+        var app = {name: name, label: label};
+        var self = this;
+        rest.postAndGet('/rest/config/apps', app).then(function(data, status, jqXHR){
+            self.errorHolder.css('display', 'none');
+            if(self.okCallback){
+                self.okCallback(data, status, jqXHR);
+            }
+        }).catch(function(jqXHR, status, error){
+            var msg = 'There was an error in the system. Please try again later.';
+            if(jqXHR.status === 409 || jqXHR.status == 400){
+                msg = jqXHR.responseText;
+            }
+            self.errorHolder.css('display', 'block');
+            self.errorHolder.html(msg);
+        });
     } 
+
+    handleKeyPress(event){
+        var key = event.key;
+        var which = event.which;
+        if(key == 'Enter' || which == 13){
+            this.save();
+        }
+    }
     
     componentDidMount() {
+        this.form = jQuery(this.html.form.current);
+        this.errorHolder = jQuery(this.html.errorHolder.current);
+
         const self = this;
-        var nameInput = jQuery(this.html.nameInput.current);
+        var nameInput = jQuery(this.html.name.current);
+
+        this.form.find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
+
         jQuery(this.html.modal.current).on('shown.bs.modal', function(){
             nameInput.focus();
-            
         });
 
         jQuery(this.html.modal.current).on('show.bs.modal', function(){
@@ -103,11 +133,12 @@ class NewAppDialog extends React.Component {
                                         Label:  <input ref={this.html.label} className="form-control" type="text"/>
                                     </label>
                                 </div>
-                            </form>
-                            <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                <button type="button" className="btn btn-secondary" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
-                                <button onClick={this.save} type="button" className="btn btn-success">Save</button>
-                            </div>
+                                <div ref={this.html.errorHolder} className="alert alert-danger" style={{display: 'none'}}></div>
+                                <div className="form-group" style={{display: 'flex', justifyContent: 'flex-end'}}>
+                                    <button type="button" className="btn btn-secondary" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
+                                    <button onClick={this.save} type="button" className="btn btn-success">Save</button>
+                                </div>
+                            </form> 
                         </div>
                     </div>
                 </div>

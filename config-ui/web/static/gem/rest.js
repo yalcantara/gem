@@ -3,6 +3,26 @@ if(typeof(window.rest) === 'undefined' || window.rest == null){
     window.rest = {};
 }
 
+rest.get = function(url){
+    var p = new Promise(function(resolve, reject){
+        jQuery.ajax({
+            method: 'GET',
+            url: url,
+            headers: {
+                'Accept': 'application/json'
+            },
+            success: function(data, status, jqXHR){
+                resolve(data, status, jqXHR);                
+            },
+            error: function(jqXHR, status, error){
+                reject(jqXHR, status, error);
+            }
+        });
+    });
+
+    return p;
+}
+
 rest.post = function(url, data){
     var p = new Promise(function(resolve, reject){
         jQuery.ajax({

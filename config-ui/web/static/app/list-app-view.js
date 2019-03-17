@@ -3,7 +3,7 @@
 class ListAppView extends React.Component {
 
     state = {
-        apps: []
+        list: []
     };
 
     props = {};
@@ -11,43 +11,48 @@ class ListAppView extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-        this.state.apps = props.apps.slice(0);
-        utils.sortField(this.state.apps, 'name');
+        utils.sortField(this.state.list, 'name');
     }
 
+    setList(list){
+        this.setState({list: list});
+    }
 
-    remove(app){
+   
+
+
+    remove(record){
         var c;
         c = "Are you sure you want to ";
         c += "<span style='font-weight: bold; color: red'>delete</span> ";
         c += "the app <span style='font-weight: bold;'>";
-        c += app.name;
+        c += record.name;
         c += "</span>.";
 
         var self = this;
         showConfirmDialog({content: c, title: 'Delete App'}).then(()=>{
-            rest.httpDelete('/rest/apps/' + app.name).then(()=>{
-                var arr = utils.findAndDelete(self.state.apps, 'name', app.name);
-                self.setState({apps: arr});
+            rest.httpDelete('/rest/config/apps/' + record.name).then(()=>{
+                var arr = utils.findAndDelete(self.state.list, 'name', record.name);
+                self.setState({list: arr});
             });
         });
     }
 
     render() {
         var self = this;
-        const RenderRow = function (app) {
+        const RenderRow = function (record) {
             return (
-                <tr key={app._id.$oid}>
+                <tr key={record.id}>
                     <td style={{padding: '0px'}}>
                         <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center'}}>
                             <i  className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
-                            <i onClick={()=>{self.remove(app)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
+                            <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
-                    <td><a href="#">{app.name}</a></td>
-                    <td>{app.label}</td>
-                    <td>{moment(new Date(app.lastUpdate)).fromNow()}</td>
-                    <td style={{textAlign: 'right'}}>{utils.formatDate(app.creationDate)}</td>
+                    <td><a href="#">{record.name}</a></td>
+                    <td>{record.label}</td>
+                    <td style={{textAlign: 'right'}}>{moment(new Date(record.lastUpdate)).fromNow()}</td>
+                    <td style={{textAlign: 'right'}}>{utils.formatDate(record.creationDate)}</td>
                 </tr>
             );
         };
@@ -56,7 +61,7 @@ class ListAppView extends React.Component {
             <div>
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <a href="#" data-toggle="modal" data-target={'#'+ this.props.createModal}>
-                        <i className="fas fa-plus-circle"></i>
+                        <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>
                         Create
                     </a>
                 </div>
@@ -71,7 +76,7 @@ class ListAppView extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.state.apps.map(RenderRow)}
+                        {this.state.list.map(RenderRow)}
                     </tbody>
                 </table>
             </div>
