@@ -30,10 +30,6 @@ public class Json implements Iterable<String>, Serializable {
 		writter = mapper.writerWithDefaultPrettyPrinter();
 	}
 	
-	public static ObjectMapper mapper() {
-		return mapper;
-	}
-	
 	@SuppressWarnings("rawtypes")
 	public static Json parse(String json) {
 		
