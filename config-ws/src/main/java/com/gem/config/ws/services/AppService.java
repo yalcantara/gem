@@ -14,7 +14,7 @@ import com.gem.commons.Json;
 import com.gem.commons.TxResult;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.Query;
-import com.gem.commons.rest.exceptions.ConflictException;
+import com.gem.commons.rest.ConflictException;
 import com.gem.config.ws.entities.App;
 
 @Service
