@@ -3,6 +3,7 @@ package com.gem.commons.mongo;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import com.gem.commons.Json;
 import com.mongodb.client.AggregateIterable;
@@ -22,7 +23,9 @@ public interface Collection {
 	List find(Query query);
 
 	<T> List<T> find(Query query, Class<T> resultClass);
-
+	
+	Object findOne(ObjectId id);
+	
 	Object findOne(String filterKey, Object filterValue);
 	
 	Object findOne(Query query);
