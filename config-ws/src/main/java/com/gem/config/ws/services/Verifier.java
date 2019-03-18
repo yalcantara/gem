@@ -2,54 +2,49 @@ package com.gem.config.ws.services;
 
 import static com.gem.commons.Checker.checkParamNotNull;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.ws.rs.BadRequestException;
 
 public class Verifier {
 
-	// Check some basis:
-	// 1 - Start with letter or digit.
-	// 2 - Allows '.' and '-' after the first character
-	// But it needs extra checking because 'p..p' can be allowed.
-	private static final Pattern REGEX = Pattern.compile("[a-z0-9]{1,1}[a-z\\.0-9-]{0,20}");
-
-	public static String pack(String str) {
-		checkParamNotNull("str", str);
-		
-		StringBuilder sb = new StringBuilder();
+	private static void checkChars(String name, String str) {
 		
 		for (int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);
 			
-			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
-					|| c == '.' || c == '-') {
-				sb.append(Character.toLowerCase(c));
-			}
-		}
-		
-		return sb.toString();
-	}
-	
-	public static void checkId(String name, String id) {
-		checkParamNotNull("id", id);
-		name = name.toLowerCase();
-		Matcher m = REGEX.matcher(name);
-
-		if (m.find()) {
-			String found = m.group();
-
-			if (found.equals(id)) {
+			if (((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.'
+					|| c == '-') == false) {
 				throw new BadRequestException("Invalid " + name
-						+ ". It must start with a letter or digit, and only allows '.' and '-' as special characters.");
+						+ ". Only letter, digit, dot(.) and dash(-) characters are allowed.");
 			}
 		}
 		
-		for (int i = 0; i < name.length(); i++) {
-			char crt = name.charAt(i);
+	}
+
+	// Check some basis:
+	// 1 - Start with letter or digit.
+	// 2 - Allows only: letters, digits, dots(.) and dashes(-).
+	// 3 - The dot(.) and dash(-) characters can not be sequential.
+	// 4 - It must end with a letter of digit.
+	public static String checkId(String name, String id) {
+		checkParamNotNull("id", id);
+		id = id.toLowerCase().strip();
+
+		// 1 - Start with [a-z] or [0-9]
+		char firstChar = id.charAt(0);
+		if (((firstChar >= 'a' && firstChar <= 'z')
+				|| (firstChar >= '0' && firstChar <= '9')) == false) {
+			throw new BadRequestException(
+					"Invalid " + name + ". It must start with a letter or digit.");
+		}
+
+		// 2 - Allows only: letters, digits, dots(.) and dashes(-).
+		checkChars("name", id);
+
+		// 3 - The dot(.) and dash(-) characters can not be sequential.
+		for (int i = 0; i < id.length(); i++) {
+			char crt = id.charAt(i);
 			if (i > 0) {
-				char prev = name.charAt(i - 1);
+				char prev = id.charAt(i - 1);
 
 				if (crt == '.' || crt == '-') {
 					if (prev == '.' || prev == '-') {
@@ -59,5 +54,15 @@ public class Verifier {
 				}
 			}
 		}
+
+		// 4 - ending with [a-z] or [0-9]
+		char lastChar = id.charAt(id.length() - 1);
+		if (((lastChar >= 'a' && lastChar <= 'z')
+				|| (lastChar >= '0' && lastChar <= '9')) == false) {
+			throw new BadRequestException(
+					"Invalid " + name + ". It must end with a letter or digit.");
+		}
+		
+		return id;
 	}
 }

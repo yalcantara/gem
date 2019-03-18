@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -19,119 +21,142 @@ import com.gem.config.ws.entities.App;
 
 @Service
 public class AppService {
-	
+
 	@Inject
 	@Qualifier("apps")
 	private Collection apps;
-
+	
 	@SuppressWarnings("unchecked")
 	public List<App> list() {
-
+		
 		return apps.find();
 	}
-	
+
 	public App get(String name) {
 		checkParamNotNull("name", name);
-		return (App) apps.findOne("name", name);
-	}
-	
-	public boolean exist(String name) {
-		checkParamNotNull("name", name);
+		App dto = (App) apps.findOne("name", name);
 		
-		name = Verifier.pack(name);
+		if (dto == null) {
+			throw new NotFoundException("The app '" + name + "' does not exist.");
+		}
 		
-		Json q = new Json();
-		q.put("name", name);
-		
-		long count = apps.count(q);
-		
-		return count > 0;
+		return dto;
 	}
 
+	public App get(ObjectId id) {
+		checkParamNotNull("id", id);
+		App dto = (App) apps.findOne(id);
+		if (dto == null) {
+			throw new NotFoundException("The app does not exist.");
+		}
+		
+		return dto;
+	}
+
+	public boolean exist(String name) {
+		checkParamNotNull("name", name);
+
+		name = Verifier.checkId("name", name);
+
+		Json q = new Json();
+		q.put("name", name);
+
+		long count = apps.count(q);
+
+		return count > 0;
+	}
+	
 	public boolean isAvailable(String name) {
 		return exist(name) == false;
 	}
-
+	
 	public void checkName(String name) {
-		
+
 		if (exist(name)) {
 			throw new ConflictException("The app '" + name + "' already exists.");
 		}
 	}
-	
+
 	public App create(String name) {
 		App app = new App();
 		app.setName(name);
 		return create(app);
 	}
-	
+
 	public App create(App app) {
 		checkParamNotNull("app", app);
 		checkParamNotNull("app.name", app.getName());
-		
+
 		String name = app.getName();
-		Verifier.checkId("name", name);
-
-		name = Verifier.pack(name);
 		
-		checkName(name);
+		name = Verifier.checkId("name", name);
 
+		checkName(name);
+		
 		String label = app.getLabel();
 		if (label != null) {
 			label = label.strip();
 		}
-
+		
 		App ent = new App();
 		ent.setName(name);
 		ent.setLabel(label);
-		
+
 		Date now = new Date();
 		ent.setCreationDate(now);
 		ent.setLastUpdate(now);
-		
+
 		apps.insert(ent);
 		return ent;
 	}
-	
-	public TxResult<App> put(String name, App app) {
-		checkParamNotNull("name", name);
+
+	public TxResult<App> put(ObjectId id, App app) {
+		checkParamNotNull("id", id);
 		checkParamNotNull("app", app);
 		checkParamNotNull("app.name", app.getName());
 
-		name = Verifier.pack(name);
-		if (isAvailable(name)) {
-			app.setName(name);
-			App ent = create(app);
-			return new TxResult<>(true, ent);
+		String name = app.getName();
+		name = Verifier.checkId("name", name);
+
+		App ref = get(id);
+
+		if (ref.getName().equals(name) == false) {
+			// it's a rename, we have to check if the name is available
+			checkName(name);
 		}
 
-		String newName = app.getName();
-		Verifier.checkId("name", newName);
-		checkName(newName);
-		
+		app.setName(name);
+
+		String label = app.getLabel();
+		if (label != null) {
+			label = label.strip();
+			app.setLabel(label);
+		}
+
 		Query q = new Query();
-		q.filter("name", name);
-		
-		q.update("name", newName);
+		q._id(id);
+
+		q.update("name", app.getName());
 		q.update("label", app.getLabel());
 		q.update("lastUpdate", new Date());
-		
+
 		long count = apps.update(q);
-		
-		if (count == 1) {
+
+		if (count >= 1) {
 			App ans = new App();
-			ans.setName(newName);
-			
+			ans.setId(id);
+			ans.setName(name);
+
 			return new TxResult<App>(false, ans);
 		}
-		
-		throw new ConflictException("The app set have been previously modified.");
-	}
 
+		throw new ConflictException("The app about to be updated could not be found.");
+	}
+	
 	public boolean delete(String name) {
 		checkParamNotNull("name", name);
-		
-		name = Verifier.pack(name);
+
+		name = Verifier.checkId("name", name);
 		return apps.deleteOne("name", name);
 	}
 }
