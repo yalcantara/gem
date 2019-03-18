@@ -6,20 +6,41 @@ class ListAppView extends React.Component {
         list: []
     };
 
-    props = {};
+    editCallback = null;
 
     constructor(props) {
         super(props);
-        this.props = props;
-        utils.sortField(this.state.list, 'name');
+    }
+
+    setEditCallback(func){
+        this.editCallback = func;
     }
 
     setList(list){
-        this.setState({list: list});
+        var clone = list.slice(0);
+        utils.sortField(clone, 'name');
+        this.setState({list: clone});
     }
 
-   
+    add(record){
+        var arr = this.state.list;
+        arr.push(record);
+        utils.sortField(this.state.list, 'name');
+        this.setState({list: arr});
+    }
 
+    update(record){
+        var arr = this.state.list;
+        utils.findAndReplace(arr, 'id', record);
+        utils.sortField(this.state.list, 'name');
+        this.setState({list: arr});
+    }
+
+    edit(record){
+        if(this.editCallback){
+            this.editCallback(record);
+        }
+    }
 
     remove(record){
         var c;
@@ -44,12 +65,12 @@ class ListAppView extends React.Component {
             return (
                 <tr key={record.id}>
                     <td style={{padding: '0px'}}>
-                        <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center'}}>
-                            <i  className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
+                        <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center', marginTop: '4px'}}>
+                            <i onClick={()=>{self.edit(record)}} className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
                             <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
-                    <td><a href="#">{record.name}</a></td>
+                    <td style={{paddingLeft: '15px', paddingRight: '15px'}}><a href="#">{record.name}</a></td>
                     <td>{record.label}</td>
                     <td style={{textAlign: 'right'}}>{moment(new Date(record.lastUpdate)).fromNow()}</td>
                     <td style={{textAlign: 'right'}}>{utils.formatDate(record.creationDate)}</td>
@@ -60,19 +81,19 @@ class ListAppView extends React.Component {
         return (
             <div>
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    <a href="#" data-toggle="modal" data-target={'#'+ this.props.createModal}>
+                    <a href="#" data-toggle="modal" data-target={'#'+ this.props.createDialog}>
                         <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>
                         Create
                     </a>
                 </div>
-                <table className="table table-striped table-bordered table-hover table-condensed">
+                <table className="table table-striped table-bordered table-hover table-sm">
                     <thead>
                         <tr>
                             <td style={{width: '60px'}}></td>
                             <td>Name</td>
                             <td>Label</td>
-                            <td>Last Update</td>
-                            <td>Creation Date</td>
+                            <td style={{minWidth: '140px'}}>Last Update</td>
+                            <td style={{minWidth: '250px'}}>Creation Date</td>
                         </tr>
                     </thead>
                     <tbody>

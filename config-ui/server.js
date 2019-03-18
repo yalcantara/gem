@@ -5,6 +5,8 @@ const proxy = require('http-proxy-middleware');
 
 const app = express();
 
+app.set('x-powered-by', false);
+
 const port = 4000;
 
 app.set('json spaces', 2);
@@ -32,15 +34,16 @@ app.post('/rest/gem/sec/login', (req, res)=>{
 var options = {};
 options.target = 'http://localhost:8080';
 options.changeOrigin = false;
+options.preserveHeaderKeyCase = true;
 options.proxyTimeout = 30000;
 options.timeout = 30000;
 
 app.use('/rest/config', proxy('/rest/config', options));
-app.use('/config',      express.static('web'));
-app.use('/config/',     express.static('web'));
+app.use('/',            express.static('web'));
 app.use('/home',        express.static('web/home'));
 app.use('/home/',       express.static('web/home'));
 app.use('/static',      express.static('web/static'));
+app.use('/static/',     express.static('web/static'));
 
 app.listen(port, ()=>{
     console.log('Listening on port: ' + port +'.')

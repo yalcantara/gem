@@ -15,6 +15,9 @@
     text-align: center;
  } 
 
+ .bold{
+    font-weight: bold;
+ }
 
  .silk{
      min-width: 16px;

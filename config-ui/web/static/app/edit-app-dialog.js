@@ -1,5 +1,10 @@
-class NewAppDialog extends React.Component { 
-            
+class EditAppDialog extends React.Component { 
+        
+    state =  {
+        appName: '',
+        app: null
+    };
+
     props = {};
 
     form = null;
@@ -7,8 +12,6 @@ class NewAppDialog extends React.Component {
     
     constructor(props) { 
         super(props); 
-        this.state = {}; 
-        this.state.name = ''; 
 
         this.props = props;
 
@@ -16,6 +19,7 @@ class NewAppDialog extends React.Component {
         this.html.modal = React.createRef();
         this.html.form = React.createRef();
         this.html.name = React.createRef();
+        this.html.oldName = React.createRef();
         this.html.msg = React.createRef();
         this.html.label = React.createRef();
         this.html.errorHolder = React.createRef();
@@ -23,6 +27,12 @@ class NewAppDialog extends React.Component {
         this.save = this.save.bind(this);
 
     } 
+
+    setRecord(record){
+        this.state.appName = record.name;
+        this.state.app = record;
+        this.setState({appName: record.name});
+    }
 
     setOkCallback(func){
         this.okCallback = func;
@@ -32,7 +42,7 @@ class NewAppDialog extends React.Component {
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current
 
-        nameInput.value = '';
+        nameInput.value = this.state.appName;
         nameInput.classList.remove('is-invalid');
         msg.style.display = 'none';
         this.errorHolder.css('display', 'none');
@@ -69,9 +79,10 @@ class NewAppDialog extends React.Component {
         var name = this.html.name.current.value;
         var label = this.html.label.current.value;
         
+        const id = this.state.app.id;
         var app = {name: name, label: label};
         var self = this;
-        rest.postAndGet('/rest/config/apps', app).then(function(res){
+        rest.putAndGet('/rest/config/apps/' + id, app).then(function(res){
             self.errorHolder.css('display', 'none');
             if(self.okCallback){
                 self.okCallback(res);
@@ -122,7 +133,7 @@ class NewAppDialog extends React.Component {
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">
                         <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title">Create New App</span>
+                            <span className="modal-title">Edit App</span>
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -131,7 +142,12 @@ class NewAppDialog extends React.Component {
                             <form ref={this.html.form} style={{marginBottom: '5px'}}>
                                 <div className="form-group">
                                     <label style={{width: '100%'}}>
-                                        Name: * <input ref={this.html.name} className="form-control" type="text"/>
+                                        App: <input ref={this.html.name} value={this.state.appName} className="form-control" type="text" disabled/>
+                                    </label>
+                                </div>
+                                <div className="form-group">
+                                    <label style={{width: '100%'}}>
+                                        Name: <input ref={this.html.name} className="form-control" type="text"/>
                                     </label>
                                     <div ref={this.html.msg} style={{display: 'none'}}></div>
                                 </div>
@@ -143,7 +159,7 @@ class NewAppDialog extends React.Component {
                                 <div ref={this.html.errorHolder} className="alert alert-danger" style={{display: 'none'}}></div>
                                 <div style={{display: 'flex', justifyContent: 'flex-end'}}>
                                     <button type="button" className="btn btn-secondary" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
-                                    <button onClick={this.save} type="button" className="btn btn-success">Save</button>
+                                    <button onClick={this.save} type="button" className="btn btn-success">Update</button>
                                 </div>
                             </form> 
                         </div>

@@ -12,6 +12,7 @@
     <script type="text/javascript" src="/static/vendors/babel.js"></script>
     <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
     <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-router-dom.js"></script>
     <script type="text/javascript" src="/static/vendors/moment.js"></script>
     <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
 
@@ -22,20 +23,38 @@
     <script type="text/javascript" src="/static/gem/rest.js"></script>
     <script type="text/babel" src="/static/gem/dialogs/confirm.js"></script>
     <script type="text/babel" src="/static/app/new-app-dialog.js"></script>
+    <script type="text/babel" src="/static/app/edit-app-dialog.js"></script>
     <script type="text/babel" src="/static/app/list-app-view.js"></script>
     
-    <script type="text/javascript">
 
-    
-    </script>
+
     <script type="text/babel">
+
+
         ReactDOM.render(<ConfirmDialog/>, document.getElementById('confirm-dialog-holder'));
-        ReactDOM.render(<NewAppDialog id="newAppModal"/>, document.getElementById('new-app-dialog-holder'));
 
-        var appList = ReactDOM.render(<ListAppView createModal="newAppModal"/>, document.getElementById('app-list'));
+        const newApp = ReactDOM.render(<NewAppDialog id="newAppDialog"/>, document.getElementById('new-app-dialog-holder'));
+        const editApp = ReactDOM.render(<EditAppDialog id="editAppDialog"/>, document.getElementById('edit-app-dialog-holder'));
 
-        rest.get('/rest/config/apps').then(function(data){
-            appList.setList(data);
+        const appList = ReactDOM.render(<ListAppView createDialog="newAppDialog" editDialog="editAppDialog"/>, document.getElementById('app-list'));
+
+
+        editApp.setOkCallback(function(res){
+            appList.update(res.data);
+            jQuery('#editAppDialog').modal('hide');
+        });
+
+        appList.setEditCallback(function(record){
+            editApp.setRecord(record);
+            jQuery('#editAppDialog').modal('show');
+        });
+        newApp.setOkCallback(function(res){
+            appList.add(res.data);
+            jQuery('#newAppDialog').modal('hide');
+        });
+
+        rest.get('/rest/config/apps').then(function(res){
+            appList.setList(res.data);
         });
 
         
@@ -45,13 +64,13 @@
 
 <body style="display: flex; justify-content: center; padding-top: 50px;">
 
-    
+
     <div id="confirm-dialog-holder"></div>
     <div id="new-app-dialog-holder"></div>
+    <div id="edit-app-dialog-holder"></div>
 
     <div id="app-list" style="width: 700px;">
     
     </div>
-
 </body>
 </html>

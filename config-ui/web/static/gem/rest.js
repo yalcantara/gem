@@ -11,15 +11,48 @@ rest.get = function(url){
             headers: {
                 'Accept': 'application/json'
             },
-            success: function(data, status, jqXHR){
-                resolve(data, status, jqXHR);                
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});                
             },
-            error: function(jqXHR, status, error){
-                reject(jqXHR, status, error);
+            error: function(j, s, e){
+                reject({jqXHR: j, status: s, error: e});
             }
         });
     });
 
+    return p;
+}
+
+rest.put = function(url, data){
+    var p = new Promise(function(resolve, reject){
+        jQuery.ajax({
+            method: 'PUT',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});                
+            },
+            error: function(j, s, e){
+                reject({jqXHR: j, status: s, error: e});
+            }
+        });
+    });
+
+    return p;
+}
+
+rest.putAndGet = function(url, data){
+    var p = new Promise(function(resolve, reject){
+        rest.put(url, data).then( function(response){
+            rest.handleSuccessForGet(resolve, reject, response);
+        }).catch(function(response){
+            reject(response);
+        });
+    });
+    
     return p;
 }
 
@@ -32,11 +65,11 @@ rest.post = function(url, data){
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify(data),
-            success: function(data, status, jqXHR){
-                resolve(data, status, jqXHR);                
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});                
             },
-            error: function(jqXHR, status, error){
-                reject(jqXHR, status, error);
+            error: function(j, s, e){
+                reject({jqXHR: j, status: s, error: e});
             }
         });
     });
@@ -46,36 +79,13 @@ rest.post = function(url, data){
 
 rest.postAndGet = function(url, data){
     var p = new Promise(function(resolve, reject){
-        jQuery.ajax({
-            method: 'POST',
-            url: url,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(data),
-            success: function(data, status, jqXHR){
-                var l = jqXHR.getResponseHeader('Location');
-                if(l){
-                    jQuery.ajax({
-                        method: 'GET',
-                        url: l,
-                        success: function(data, status, jqXHR){
-                            resolve(data, status, jqXHR);
-                        },
-                        error: function(jqXHR, status, error){
-                            reject(jqXHR, status, error);
-                        }
-                    })
-                }else{
-                    resolve(data, status, jqXHR);
-                }
-            },
-            error: function(jqXHR, status, error){
-                reject(jqXHR, status, error);
-            }
+        rest.post(url, data).then( function(res){
+            rest.handleSuccessForGet(resolve, reject, res);
+        }).catch(function(res){
+            reject(res);
         });
     });
-
+    
     return p;
 }
 
@@ -84,14 +94,34 @@ rest.httpDelete = function(url){
         jQuery.ajax({
             method: 'DELETE',
             url: url,
-            success: function(data, status, jqXHR){
-                resolve(data, status, jqXHR);
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});
             },
-            error: function(jqXHR, status, error){
-                reject(jqXHR, status, error);
+            error: function(j, s, e){
+                reject({jqXHR: j, status: s, error: e});
             }
         });
     });
 
     return p;
+}
+
+
+rest.handleSuccessForGet = function(resolve, reject, response){
+    var l = response.jqXHR.getResponseHeader('Location');
+    if(l == null){
+        //some nodejs apps send headers in lowercase.
+        l = response.jqXHR.getResponseHeader('location');
+    }
+    if(l){
+        rest.get(l).then(function(res2){
+            resolve(res2);
+        }).catch(function(res2){
+            reject(res2);
+        });
+    }else{
+        if(console){
+            console.error('No Location header found.');
+        }
+    }
 }

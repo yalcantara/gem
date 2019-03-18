@@ -212,17 +212,17 @@ class LoginForm extends React.Component{
             }
 
             window.location = '/home';
-        }).catch(function(jqXHR, status, error){
+        }).catch(function(res){
             self.passInput.val('');
             self.initalState();
             var msg = 'There was an error in the system. Please try again later.';
-            if(jqXHR.status === 401){
+            if(res.jqXHR.status === 401){
                 msg = 'User name and password does not match.';
             }
             self.errorHolder.css('display', 'block');
             self.errorHolder.html(msg);
 
-            if(jqXHR.status === 401){
+            if(res.jqXHR.status === 401){
                 self.passInput.focus();
             }
         });
