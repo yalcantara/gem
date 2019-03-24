@@ -18,7 +18,7 @@ public class App implements Serializable {
 	private static final long serialVersionUID = -5368036186948391390L;
 
 	@Id
-	private ObjectId id;
+	private ObjectId _id;
 	
 	private String name;
 
@@ -33,11 +33,11 @@ public class App implements Serializable {
 	}
 	
 	public ObjectId getId() {
-		return this.id;
+		return this._id;
 	}
 	
 	public void setId(ObjectId id) {
-		this.id = id;
+		this._id = id;
 	}
 	
 	public Date getCreationDate() {
@@ -74,7 +74,7 @@ public class App implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "App [id=" + id + ", name=" + name + ", label=" + label + ", creationDate="
+		return "App [_id=" + _id + ", name=" + name + ", label=" + label + ", creationDate="
 				+ creationDate + ", lastUpdate=" + lastUpdate + "]";
 	}
 	
