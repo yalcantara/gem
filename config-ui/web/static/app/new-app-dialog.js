@@ -24,6 +24,11 @@ class NewAppDialog extends React.Component {
 
     } 
 
+
+    show(){
+        jQuery(this.refs.modal).modal('show');
+    }
+
     setOkCallback(func){
         this.okCallback = func;
     }
@@ -31,11 +36,14 @@ class NewAppDialog extends React.Component {
     beforeShow(){
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current
+        var labelInput = this.html.label.current
 
         nameInput.value = '';
         nameInput.classList.remove('is-invalid');
         msg.style.display = 'none';
         this.errorHolder.css('display', 'none');
+
+        labelInput.value = '';
     }
 
     validate(){
@@ -73,13 +81,14 @@ class NewAppDialog extends React.Component {
         var self = this;
         rest.postAndGet('/rest/config/apps', app).then(function(res){
             self.errorHolder.css('display', 'none');
-            if(self.okCallback){
-                self.okCallback(res);
-            }
+            jQuery(self.refs.modal).modal('hide');
+            self.props.createHandler(res.data);
         }).catch(function(res){
             var msg = 'There was an error in the system. Please try again later.';
-            if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
-                msg = res.jqXHR.responseText;
+            if(res && res.jqXHR){
+                if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
+                    msg = res.jqXHR.responseText;
+                }
             }
             self.errorHolder.css('display', 'block');
             self.errorHolder.html(msg);
@@ -103,21 +112,20 @@ class NewAppDialog extends React.Component {
 
         this.form.find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
 
-        //let's add the events later
-        setTimeout(function(){
-            jQuery(self.html.modal.current).on('shown.bs.modal', function(){
-                nameInput.focus();
-            });
+      
+        jQuery(self.refs.modal).on('shown.bs.modal', function(){
+            nameInput.focus();
+        });
 
-            jQuery(self.html.modal.current).on('show.bs.modal', function(){
-                self.beforeShow();
-            });
-        },100);
+        jQuery(self.refs.modal).on('show.bs.modal', function(){
+            self.beforeShow();
+        });
+     
     }
     
     render() { 
         return (
-            <div id={this.props.id} ref={this.html.modal} className="modal fade"
+            <div ref="modal" className="modal fade"
                 tabIndex="-1" role="dialog" data-backdrop="static" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">

@@ -1,25 +1,20 @@
 class EditAppDialog extends React.Component { 
         
-    state =  {
-        appName: '',
-        app: null
-    };
+    
 
-    props = {};
-
+    app = {};
     form = null;
+    modal = null;
     errorHolder = null;
     
     constructor(props) { 
         super(props); 
 
-        this.props = props;
 
         this.html = {};
         this.html.modal = React.createRef();
         this.html.form = React.createRef();
         this.html.name = React.createRef();
-        this.html.oldName = React.createRef();
         this.html.msg = React.createRef();
         this.html.label = React.createRef();
         this.html.errorHolder = React.createRef();
@@ -34,15 +29,19 @@ class EditAppDialog extends React.Component {
         this.setState({appName: record.name});
     }
 
-    setOkCallback(func){
-        this.okCallback = func;
+
+    show(record){
+        this.app = record;
+        this.refs.crtName.value = record.name;
+        this.html.label.current.value = record.label;
+        this.modal.modal('show');
     }
 
     beforeShow(){
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current
 
-        nameInput.value = this.state.appName;
+        nameInput.value = this.app.name;
         nameInput.classList.remove('is-invalid');
         msg.style.display = 'none';
         this.errorHolder.css('display', 'none');
@@ -79,18 +78,20 @@ class EditAppDialog extends React.Component {
         var name = this.html.name.current.value;
         var label = this.html.label.current.value;
         
-        const id = this.state.app.id;
+        const id = this.app.id;
         var app = {name: name, label: label};
         var self = this;
         rest.putAndGet('/rest/config/apps/' + id, app).then(function(res){
             self.errorHolder.css('display', 'none');
-            if(self.okCallback){
-                self.okCallback(res);
-            }
+            self.modal.modal('hide');
+            self.props.updateHandler(res.data);
         }).catch(function(res){
             var msg = 'There was an error in the system. Please try again later.';
-            if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
-                msg = res.jqXHR.responseText;
+            
+            if(res && res.jqXHR){
+                if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
+                    msg = res.jqXHR.responseText;
+                }
             }
             self.errorHolder.css('display', 'block');
             self.errorHolder.html(msg);
@@ -104,9 +105,10 @@ class EditAppDialog extends React.Component {
             this.save();
         }
     }
-    
+
     componentDidMount() {
         this.form = jQuery(this.html.form.current);
+        this.modal = jQuery(this.html.modal.current);
         this.errorHolder = jQuery(this.html.errorHolder.current);
 
         const self = this;
@@ -127,8 +129,15 @@ class EditAppDialog extends React.Component {
     }
     
     render() { 
+
+        if(!this.props.selected){
+            return (
+                <div></div>
+            );
+        }
+
         return (
-            <div id={this.props.id} ref={this.html.modal} className="modal fade"
+            <div ref={this.html.modal} className="modal fade"
                 tabIndex="-1" role="dialog" data-backdrop="static" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">
@@ -142,7 +151,7 @@ class EditAppDialog extends React.Component {
                             <form ref={this.html.form} style={{marginBottom: '5px'}}>
                                 <div className="form-group">
                                     <label style={{width: '100%'}}>
-                                        App: <input ref={this.html.name} value={this.state.appName} className="form-control" type="text" disabled/>
+                                        App: <input ref="crtName" className="form-control" type="text" disabled/>
                                     </label>
                                 </div>
                                 <div className="form-group">

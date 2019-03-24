@@ -25,7 +25,24 @@
     <script type="text/babel" src="/static/app/new-app-dialog.js"></script>
     <script type="text/babel" src="/static/app/edit-app-dialog.js"></script>
     <script type="text/babel" src="/static/app/list-app-view.js"></script>
+    <script type="text/babel" src="/static/app/list-property-view.js"></script>
+    <script type="text/babel" src="/static/app/app-router.js"></script>
     
+
+    <script type="text/babel">
+
+
+        var Routing = function(){
+
+
+            return (
+                <ReactRouterDOM.HashRouter>
+                        <ReactRouterDOM.Route path="/:app/" component={ListAppView} />
+                        <ReactRouterDOM.Route path="/" component={ListAppView} />
+                </ReactRouterDOM.HashRouter>
+            );
+        }
+    </script>
 
 
     <script type="text/babel">
@@ -33,29 +50,8 @@
 
         ReactDOM.render(<ConfirmDialog/>, document.getElementById('confirm-dialog-holder'));
 
-        const newApp = ReactDOM.render(<NewAppDialog id="newAppDialog"/>, document.getElementById('new-app-dialog-holder'));
-        const editApp = ReactDOM.render(<EditAppDialog id="editAppDialog"/>, document.getElementById('edit-app-dialog-holder'));
+       ReactDOM.render(<AppRouter/>, document.getElementById('app-holder'));
 
-        const appList = ReactDOM.render(<ListAppView createDialog="newAppDialog" editDialog="editAppDialog"/>, document.getElementById('app-list'));
-
-
-        editApp.setOkCallback(function(res){
-            appList.update(res.data);
-            jQuery('#editAppDialog').modal('hide');
-        });
-
-        appList.setEditCallback(function(record){
-            editApp.setRecord(record);
-            jQuery('#editAppDialog').modal('show');
-        });
-        newApp.setOkCallback(function(res){
-            appList.add(res.data);
-            jQuery('#newAppDialog').modal('hide');
-        });
-
-        rest.get('/rest/config/apps').then(function(res){
-            appList.setList(res.data);
-        });
 
         
     </script>
@@ -66,11 +62,7 @@
 
 
     <div id="confirm-dialog-holder"></div>
-    <div id="new-app-dialog-holder"></div>
-    <div id="edit-app-dialog-holder"></div>
 
-    <div id="app-list" style="width: 700px;">
-    
-    </div>
+    <div id="app-holder" style="width: 700px"></div>
 </body>
 </html>

@@ -2,31 +2,13 @@
 
 class ListAppView extends React.Component {
 
-    state = {
-        list: []
-    };
-
-    editCallback = null;
 
     constructor(props) {
         super(props);
     }
 
-    setEditCallback(func){
-        this.editCallback = func;
-    }
-
-    setList(list){
-        var clone = list.slice(0);
-        utils.sortField(clone, 'name');
-        this.setState({list: clone});
-    }
-
-    add(record){
-        var arr = this.state.list;
-        arr.push(record);
-        utils.sortField(this.state.list, 'name');
-        this.setState({list: arr});
+    create(){
+        this.refs.createDialog.show();
     }
 
     update(record){
@@ -37,9 +19,7 @@ class ListAppView extends React.Component {
     }
 
     edit(record){
-        if(this.editCallback){
-            this.editCallback(record);
-        }
+        this.refs.editDialog.show(record);
     }
 
     remove(record){
@@ -53,8 +33,7 @@ class ListAppView extends React.Component {
         var self = this;
         showConfirmDialog({content: c, title: 'Delete App'}).then(()=>{
             rest.httpDelete('/rest/config/apps/' + record.name).then(()=>{
-                var arr = utils.findAndDelete(self.state.list, 'name', record.name);
-                self.setState({list: arr});
+                self.props.deleteHandler(record);
             });
         });
     }
@@ -70,7 +49,9 @@ class ListAppView extends React.Component {
                             <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
-                    <td style={{paddingLeft: '15px', paddingRight: '15px'}}><a href="#">{record.name}</a></td>
+                    <td style={{paddingLeft: '15px', paddingRight: '15px'}}>
+                        <ReactRouterDOM.Link to={'/apps/' + record.name}>{record.name}</ReactRouterDOM.Link>
+                    </td>
                     <td>{record.label}</td>
                     <td style={{textAlign: 'right'}}>{moment(new Date(record.lastUpdate)).fromNow()}</td>
                     <td style={{textAlign: 'right'}}>{utils.formatDate(record.creationDate)}</td>
@@ -80,8 +61,10 @@ class ListAppView extends React.Component {
 
         return (
             <div>
+                <NewAppDialog ref="createDialog" createHandler={this.props.createHandler}/>
+                <EditAppDialog ref="editDialog" selected={this.props.selected} updateHandler={this.props.updateHandler}/>
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    <a href="#" data-toggle="modal" data-target={'#'+ this.props.createDialog}>
+                    <a href="#" onClick={(event)=>{this.create()}}>
                         <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>
                         Create
                     </a>
@@ -97,7 +80,7 @@ class ListAppView extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.state.list.map(RenderRow)}
+                        {this.props.list.map(RenderRow)}
                     </tbody>
                 </table>
             </div>
