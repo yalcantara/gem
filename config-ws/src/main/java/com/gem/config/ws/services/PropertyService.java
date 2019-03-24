@@ -30,9 +30,15 @@ public class PropertyService {
 	public List<Property> list(String app) {
 		checkParamNotNull("app", app);
 		
+		app = Verifier.checkId("app", app);
+		appSrv.checkExist(app);
+		
 		Query q = new Query();
-		q.filter("name", app);
-		q.include("properties");
+		q.filter("name", app); // app
+		q.include("properties.name");
+		q.include("properties.label");
+		q.include("properties.lastUpdate");
+		q.include("properties.creationDate");
 
 		List<Property> list = apps.findOneAndConvertList(q, "properties", Property.class);
 		return list;
@@ -76,7 +82,7 @@ public class PropertyService {
 		// here we need to call for check the app's name because it should have
 		// been created before asking for configuration's new name. If not, it
 		// is ok to launch the ConflictException by the AppService.
-		appSrv.checkName(app);
+		appSrv.checkIsAvailable(app);
 
 		return exist(app, name) == false;
 	}
