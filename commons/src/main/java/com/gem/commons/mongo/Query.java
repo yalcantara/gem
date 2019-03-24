@@ -73,6 +73,18 @@ public class Query implements Serializable {
 
 		d.put(field, val);
 	}
+	
+	public void push(String field, Object val) {
+		
+		Document d = (Document) up().get("$push");
+
+		if (d == null) {
+			d = new Document();
+			up().put("$push", d);
+		}
+
+		d.put(field, val);
+	}
 
 	public void include(String field) {
 		checkParamNotNull("field", field);

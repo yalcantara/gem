@@ -224,21 +224,32 @@ public class CollectionImpl implements Collection {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
+	public <T> AggregateIterable<T> agregate(PipeLine pipeline, Class<T> resultClass) {
+		checkParamNotNull("pipeline", pipeline);
+		
+		AggregateIterable<T> ans = col.aggregate(pipeline.toList(), resultClass);
+		return ans;
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
 	public List<Document> agregateAndCollect(Json pipeline) {
 		
 		AggregateIterable<Document> agg = agregate(pipeline);
 		
-		List<Document> list = new ArrayList<>();
-		try (MongoCursor<Document> cur = agg.iterator()) {
-			while (cur.hasNext()) {
-				Document doc = cur.next();
-				list.add(doc);
-			}
-		}
+		return collect(agg, DEFAULT_LIMIT);
 		
-		return list;
 	}
-	
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> List<T> agregateAndCollect(PipeLine pipeline, Class<T> resultClass) {
+		AggregateIterable<T> agg = agregate(pipeline, resultClass);
+		
+		return collect(agg, DEFAULT_LIMIT);
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private List collect(MongoIterable iter, Integer limit) {
 		List arr = new ArrayList<>();
@@ -282,5 +293,5 @@ public class CollectionImpl implements Collection {
 		Grid g = Grid.wrap(arr);
 		g.print();
 	}
-	
+
 }

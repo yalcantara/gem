@@ -1,0 +1,47 @@
+package com.gem.commons.mongo;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.Document;
+
+public class PipeLine {
+	
+	private final List<Document> list;
+	
+	public PipeLine() {
+		list = new ArrayList<>();
+	}
+	
+	public void match(String field, String val) {
+		Document doc = new Document();
+		
+		Document filter = new Document();
+		filter.put(field, val);
+		doc.put("$match", filter);
+		list.add(doc);
+	}
+	
+	public void projects(String... fields) {
+		Document doc = new Document();
+		
+		Document fd = new Document();
+		for (String f : fields) {
+			fd.put(f, 1);
+		}
+		
+		doc.put("$project", fd);
+		list.add(doc);
+	}
+	
+	public void unwind(String field) {
+		Document doc = new Document();
+
+		doc.put("$unwind", "$" + field);
+		list.add(doc);
+	}
+	
+	public List<Document> toList() {
+		return new ArrayList<Document>(list);
+	}
+}

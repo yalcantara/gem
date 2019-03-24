@@ -1,11 +1,28 @@
 package com.gem.commons;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 
 public class Utils {
+	
+	public static String getStackTrace(Throwable t) {
+		if (t == null) {
+			return "null";
+		}
+		
+		// exception stack trace is mostly large.
+		StringWriter sw = new StringWriter(512);
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		
+		String ans = sw.toString();
+
+		return ans;
+	}
 
 	private static String fill(int r) {
 		if (r < 10) {
