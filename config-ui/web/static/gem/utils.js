@@ -4,6 +4,28 @@ if(typeof(window.utils) === 'undefined' || window.utils == null){
 }
 
 
+utils.notEmpty = function(val){
+    return !utils.isEmpty(val);
+}
+
+
+utils.isEmpty = function(val){
+    if(typeof(val) == 'undefined' || val == null){
+        return true;
+    }
+
+    if(jQuery.type( val ) === "string" && val == ''){
+        return true;
+    }
+
+    if(jQuery.isArray(val)){
+        if(val.length == 0){
+            return true;
+        }
+    }
+
+    return false;
+}
 
 utils.packEmail = function(arg){
     var str;
@@ -27,6 +49,21 @@ utils.packEmail = function(arg){
     return ans;
 };
 
+utils.find = function(arr, field, val){
+    if(arr && arr.length > 0){
+        for(var i =0; i < arr.length; i++){
+            var other = arr[i];
+            if(other){
+                if(other[field] == val){
+                    return other;
+                }
+            }
+        }
+    }
+
+    return null;
+};
+
 utils.findAndReplace = function(arr, field, val){
     if(arr && arr.length > 0){
         for(var i =0; i < arr.length; i++){
@@ -46,14 +83,10 @@ utils.findAndDelete = function(arr, field, val){
         for(var i =0; i < arr.length; i++){
             var other = arr[i];
             if(other){
-                if(other[field]){
-                    if(other[field] === val){
-                        continue;
-                    }
-                    ans.push(other);
-                }else{
-                    ans.push(other);
+                if(other[field] === val){
+                    continue;
                 }
+                ans.push(other);
             }else{
                 ans.push(other);
             }
@@ -66,7 +99,10 @@ utils.findAndDelete = function(arr, field, val){
 
 
 utils.formatDate = function(unixTime){
-    return moment(new Date(unixTime)).format('MMMM Do YYYY, h:mm:ss a');
+    if(unixTime){
+        return moment(new Date(unixTime)).format('MMMM Do YYYY, h:mm:ss a');
+    }
+    return '';
 };
 
 utils.sortField = function(arr, field){

@@ -29,9 +29,6 @@ class NewAppDialog extends React.Component {
         jQuery(this.refs.modal).modal('show');
     }
 
-    setOkCallback(func){
-        this.okCallback = func;
-    }
 
     beforeShow(){
         var msg = this.html.msg.current;

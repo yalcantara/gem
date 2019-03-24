@@ -2,7 +2,9 @@ class AppRouter extends React.Component{
 
     state = {
         apps: [],
-        selectedApp: {}
+        crtApp: {
+            $properties: []
+        }
     };
 
     constructor(props){
@@ -34,16 +36,37 @@ class AppRouter extends React.Component{
         this.setState({apps: this.state.apps});
     }
 
+
+    propsMountHandler(match){
+        var appName = match.params.app;
+        var app = utils.find(this.state.apps, 'name', appName);
+        var self = this;
+        if(utils.isEmpty(app.$properties)){
+            rest.get('/rest/config/apps/' + appName + '/properties').then(function(res){
+                app.$properties = res.data;
+                self.setState({crtApp: app});
+            });
+        }
+    }
+
     render(){
         return (
-            <ReactRouterDOM.HashRouter>
-                    <ReactRouterDOM.Route exact path="/" ref="appList"
+            <ReactRouterDOM.HashRouter ref="router">
+                    <ReactRouterDOM.Route exact path="/:sub(apps|)" ref="appList"
                         render={(props)=>(
                             <ListAppView {...props} list={this.state.apps} 
                                 selected={this.state.selectedApp}
                                 createHandler={(record)=>this.createAppHandler(record)}
                                 deleteHandler={(record)=>this.deleteAppHandler(record)}
                                 updateHandler={(record)=>this.updateAppHandler(record)}/>
+                        )}/>
+
+
+                    <ReactRouterDOM.Route path="/apps/:app/properties" ref="propList"
+                        render={(props)=>(
+                            <ListPropView {...props}
+                            crtApp={this.state.crtApp}
+                            mountHandler={(match)=>this.propsMountHandler(match)} />
                         )}/>
             </ReactRouterDOM.HashRouter>
         );

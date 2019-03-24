@@ -22,27 +22,17 @@
     <script type="text/javascript" src="/static/gem/utils.js"></script>
     <script type="text/javascript" src="/static/gem/rest.js"></script>
     <script type="text/babel" src="/static/gem/dialogs/confirm.js"></script>
+    
+    <script type="text/javascript" src="/static/app/validators.js"></script>
     <script type="text/babel" src="/static/app/new-app-dialog.js"></script>
     <script type="text/babel" src="/static/app/edit-app-dialog.js"></script>
     <script type="text/babel" src="/static/app/list-app-view.js"></script>
-    <script type="text/babel" src="/static/app/list-property-view.js"></script>
+
+    <script type="text/babel" src="/static/app/properties/list-prop-view.js"></script>
+    <script type="text/babel" src="/static/app/properties/new-prop-dialog.js"></script>
+
     <script type="text/babel" src="/static/app/app-router.js"></script>
-    
 
-    <script type="text/babel">
-
-
-        var Routing = function(){
-
-
-            return (
-                <ReactRouterDOM.HashRouter>
-                        <ReactRouterDOM.Route path="/:app/" component={ListAppView} />
-                        <ReactRouterDOM.Route path="/" component={ListAppView} />
-                </ReactRouterDOM.HashRouter>
-            );
-        }
-    </script>
 
 
     <script type="text/babel">
@@ -50,7 +40,7 @@
 
         ReactDOM.render(<ConfirmDialog/>, document.getElementById('confirm-dialog-holder'));
 
-       ReactDOM.render(<AppRouter/>, document.getElementById('app-holder'));
+        ReactDOM.render(<AppRouter/>, document.getElementById('app-holder'));
 
 
         
