@@ -1,5 +1,6 @@
 package com.gem.commons.mongo;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.bson.Document;
@@ -36,10 +37,13 @@ public interface Collection {
 	default <T> List<T> findOneAndConvertList(Query query, String field, Class<T> resultClass) {
 		Document doc = findOne(query, Document.class);
 		if (doc == null) {
-			return null;
+			return Collections.emptyList();
 		}
 
 		List arr = (List) doc.get(field);
+		if (arr == null) {
+			return Collections.emptyList();
+		}
 		return Converter.convertList(arr, resultClass);
 	}
 	
