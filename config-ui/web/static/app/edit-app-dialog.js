@@ -4,7 +4,6 @@ class EditAppDialog extends React.Component {
 
     app = {};
     form = null;
-    modal = null;
     errorHolder = null;
     
     constructor(props) { 
@@ -12,7 +11,6 @@ class EditAppDialog extends React.Component {
 
 
         this.html = {};
-        this.html.modal = React.createRef();
         this.html.form = React.createRef();
         this.html.name = React.createRef();
         this.html.msg = React.createRef();
@@ -23,31 +21,26 @@ class EditAppDialog extends React.Component {
 
     } 
 
-    setRecord(record){
-        this.state.appName = record.name;
-        this.state.app = record;
-        this.setState({appName: record.name});
-    }
-
-
     show(record){
         this.app = record;
-        this.refs.crtName.value = record.name;
-        this.html.label.current.value = record.label;
-        this.modal.modal('show');
+        jQuery(this.refs.modal).modal('show');
     }
 
     beforeShow(){
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current
 
+        this.refs.crtName.value = this.app.name;
         nameInput.value = this.app.name;
         nameInput.classList.remove('is-invalid');
         msg.style.display = 'none';
         this.errorHolder.css('display', 'none');
+
+        this.html.label.current.value = this.app.label;
     }
 
     validate(){
+        
         
         var msg = this.html.msg.current;
         var nameInput = this.html.name.current;
@@ -78,20 +71,18 @@ class EditAppDialog extends React.Component {
         var name = this.html.name.current.value;
         var label = this.html.label.current.value;
         
-        const id = this.app.id;
+        const id = this.app._id;
         var app = {name: name, label: label};
         var self = this;
         rest.putAndGet('/rest/config/apps/' + id, app).then(function(res){
             self.errorHolder.css('display', 'none');
-            self.modal.modal('hide');
+            jQuery(self.refs.modal).modal('hide');
             self.props.updateHandler(res.data);
         }).catch(function(res){
             var msg = 'There was an error in the system. Please try again later.';
             
-            if(res && res.jqXHR){
-                if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
-                    msg = res.jqXHR.responseText;
-                }
+            if(res && res.appMsg){
+                msg = res.appMsg;
             }
             self.errorHolder.css('display', 'block');
             self.errorHolder.html(msg);
@@ -108,7 +99,6 @@ class EditAppDialog extends React.Component {
 
     componentDidMount() {
         this.form = jQuery(this.html.form.current);
-        this.modal = jQuery(this.html.modal.current);
         this.errorHolder = jQuery(this.html.errorHolder.current);
 
         const self = this;
@@ -118,11 +108,11 @@ class EditAppDialog extends React.Component {
 
         //let's add the events later
         setTimeout(function(){
-            jQuery(self.html.modal.current).on('shown.bs.modal', function(){
+            jQuery(self.refs.modal).on('shown.bs.modal', function(){
                 nameInput.focus();
             });
 
-            jQuery(self.html.modal.current).on('show.bs.modal', function(){
+            jQuery(self.refs.modal).on('show.bs.modal', function(){
                 self.beforeShow();
             });
         },100);
@@ -130,14 +120,8 @@ class EditAppDialog extends React.Component {
     
     render() { 
 
-        if(!this.props.selected){
-            return (
-                <div></div>
-            );
-        }
-
         return (
-            <div ref={this.html.modal} className="modal fade"
+            <div ref="modal" className="modal fade"
                 tabIndex="-1" role="dialog" data-backdrop="static" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">

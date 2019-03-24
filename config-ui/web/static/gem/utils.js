@@ -64,13 +64,20 @@ utils.find = function(arr, field, val){
     return null;
 };
 
-utils.findAndReplace = function(arr, field, val){
+utils.findAndReplaceOne = function(arr, field, val){
     if(arr && arr.length > 0){
         for(var i =0; i < arr.length; i++){
             var other = arr[i];
             if(other){
-                if(other[field] === val[field]){
+
+                if(typeof(other[field]) === 'undefined'){
+                    continue;
+                }
+
+                if( other[field] === val[field]){
+                    var prev = arr[i];
                     arr[i] = val;
+                    return prev;
                 }
             }
         }

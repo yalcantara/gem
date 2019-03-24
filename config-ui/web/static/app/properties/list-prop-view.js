@@ -17,7 +17,7 @@ class ListPropView extends React.Component{
         var self = this;
         const RenderRow = function (record) {
             return (
-                <tr key={record.id}>
+                <tr key={record._id}>
                     <td style={{padding: '0px'}}>
                         <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center', marginTop: '4px'}}>
                             <i onClick={()=>{self.edit(record);return false}} className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
@@ -36,7 +36,7 @@ class ListPropView extends React.Component{
 
         return (
             <div>
-                <NewPropDialog ref="createDialog" crtApp={this.props.crtApp}/>
+                <NewPropDialog ref="createDialog" crtApp={this.props.crtApp} createHandler={this.props.createHandler}/>
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <a href="#" onClick={(e)=>{e.preventDefault(); this.create();}}>
                         <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>

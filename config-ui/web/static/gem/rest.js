@@ -3,6 +3,20 @@ if(typeof(window.rest) === 'undefined' || window.rest == null){
     window.rest = {};
 }
 
+rest.assignMessage = function(jqXHR){
+    var h = response.jqXHR.getResponseHeader('X-Application-Message');
+    if(h == null){
+        h = response.jqXHR.getResponseHeader('x-application-message');
+    }
+
+    if(h == 'true'){
+        //adding the appMsg only if the X-Application-Message header is found.
+        jqXHR.appMsg = responseText;
+    }else{
+        jqXHR.appMsg = null;
+    }
+};
+
 rest.get = function(url){
     var p = new Promise(function(resolve, reject){
         jQuery.ajax({
@@ -15,7 +29,8 @@ rest.get = function(url){
                 resolve({data: d, status: s, jqXHR: j});                
             },
             error: function(j, s, e){
-                reject({jqXHR: j, status: s, error: e});
+                rest.assignMessage(j);
+                reject({jqXHR: j, status: s, error: e, appMsg: j.appMsg});
             }
         });
     });
@@ -36,7 +51,51 @@ rest.put = function(url, data){
                 resolve({data: d, status: s, jqXHR: j});                
             },
             error: function(j, s, e){
-                reject({jqXHR: j, status: s, error: e});
+                rest.assignMessage(j);
+                reject({jqXHR: j, status: s, error: e, appMsg: j.appMsg});
+            }
+        });
+    });
+
+    return p;
+}
+
+
+
+rest.post = function(url, data){
+    var p = new Promise(function(resolve, reject){
+        jQuery.ajax({
+            method: 'POST',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});                
+            },
+            error: function(j, s, e){
+                rest.assignMessage(j);
+                reject({jqXHR: j, status: s, error: e, appMsg: j.appMsg});
+            }
+        });
+    });
+
+    return p;
+}
+
+
+rest.httpDelete = function(url){
+    var p = new Promise(function(resolve, reject){
+        jQuery.ajax({
+            method: 'DELETE',
+            url: url,
+            success: function(d, s, j){
+                resolve({data: d, status: s, jqXHR: j});
+            },
+            error: function(j, s, e){
+                rest.assignMessage(j);
+                reject({jqXHR: j, status: s, error: e, appMsg: j.appMsg});
             }
         });
     });
@@ -56,27 +115,6 @@ rest.putAndGet = function(url, data){
     return p;
 }
 
-rest.post = function(url, data){
-    var p = new Promise(function(resolve, reject){
-        jQuery.ajax({
-            method: 'POST',
-            url: url,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(data),
-            success: function(d, s, j){
-                resolve({data: d, status: s, jqXHR: j});                
-            },
-            error: function(j, s, e){
-                reject({jqXHR: j, status: s, error: e});
-            }
-        });
-    });
-
-    return p;
-}
-
 rest.postAndGet = function(url, data){
     var p = new Promise(function(resolve, reject){
         rest.post(url, data).then( function(res){
@@ -89,22 +127,6 @@ rest.postAndGet = function(url, data){
     return p;
 }
 
-rest.httpDelete = function(url){
-    var p = new Promise(function(resolve, reject){
-        jQuery.ajax({
-            method: 'DELETE',
-            url: url,
-            success: function(d, s, j){
-                resolve({data: d, status: s, jqXHR: j});
-            },
-            error: function(j, s, e){
-                reject({jqXHR: j, status: s, error: e});
-            }
-        });
-    });
-
-    return p;
-}
 
 
 rest.handleSuccessForGet = function(resolve, reject, response){

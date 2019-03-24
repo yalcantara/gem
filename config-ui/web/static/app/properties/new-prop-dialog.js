@@ -27,19 +27,18 @@ class NewPropDialog extends React.Component{
         var name = this.refs.nameInput.value.trim();
         var label = this.refs.labelInput.value.trim();
 
-        var app = this.props.crtApp.name;
         var prop = {name: name, label: label};
-
+        
+        var self = this;
+        var app = this.props.crtApp.name;
         rest.postAndGet('/rest/config/apps/' + app +'/properties', prop).then(function(res){
             self.refs.nameMsg.style.display = 'none';
             jQuery(self.refs.modal).modal('hide');
             self.props.createHandler(res.data);
         }).catch(function(res){
             var msg = 'There was an error in the system. Please try again later.';
-            if(res && res.jqXHR){
-                if(res.jqXHR.status === 409 || res.jqXHR.status == 400){
-                    msg = res.jqXHR.responseText;
-                }
+            if(res && res.appMsg){
+                msg = res.appMsg;
             }
             self.refs.errorHolder.style.display = 'block';
             self.refs.errorHolder.innerHTML = msg;

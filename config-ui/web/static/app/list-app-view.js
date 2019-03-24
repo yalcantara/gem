@@ -42,7 +42,7 @@ class ListAppView extends React.Component {
         var self = this;
         const RenderRow = function (record) {
             return (
-                <tr key={record.id}>
+                <tr key={record._id}>
                     <td style={{padding: '0px'}}>
                         <div style={{flexDirection: 'row', display: 'flex',  justifyContent: 'center', marginTop: '4px'}}>
                             <i onClick={()=>{self.edit(record)}} className="silk silk-pencil" style={{cursor: 'pointer', marginRight: '10px'}}></i>
