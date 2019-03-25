@@ -22,6 +22,17 @@ public class PipeLine {
 		list.add(doc);
 	}
 	
+	public void project(String field) {
+		Document doc = new Document();
+		
+		Document fd = new Document();
+
+		fd.put(field, 1);
+
+		doc.put("$project", fd);
+		list.add(doc);
+	}
+	
 	public void projects(String... fields) {
 		Document doc = new Document();
 		
@@ -38,6 +49,17 @@ public class PipeLine {
 		Document doc = new Document();
 
 		doc.put("$unwind", "$" + field);
+		list.add(doc);
+	}
+
+	public void count() {
+		count("count");
+	}
+
+	public void count(String out) {
+		Document doc = new Document();
+
+		doc.put("$count", out);
 		list.add(doc);
 	}
 	
