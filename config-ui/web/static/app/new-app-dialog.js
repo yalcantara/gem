@@ -109,14 +109,15 @@ class NewAppDialog extends React.Component {
 
         this.form.find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
 
-      
+        
+        jQuery(self.refs.modal).on('show.bs.modal', function(){
+            self.beforeShow();
+        });
+        
         jQuery(self.refs.modal).on('shown.bs.modal', function(){
             nameInput.focus();
         });
 
-        jQuery(self.refs.modal).on('show.bs.modal', function(){
-            self.beforeShow();
-        });
      
     }
     

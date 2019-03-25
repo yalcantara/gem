@@ -38,6 +38,7 @@ class AppRouter extends React.Component{
                 if(utils.isEmpty(app.$properties)){
                     rest.get('/rest/config/apps/' + appName + '/properties').then(function(res){
                         var list = res.data;
+                        utils.sortField(list, 'name');
                         app.$properties = list;
                         //setting empty $keys field.
                         list.forEach((e)=>e.$keys=[]);

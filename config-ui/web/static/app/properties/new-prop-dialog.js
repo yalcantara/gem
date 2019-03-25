@@ -45,6 +45,37 @@ class NewPropDialog extends React.Component{
         });
     }
 
+    handleKeyPress(event){
+        var key = event.key;
+        var which = event.which;
+        if(key == 'Enter' || which == 13){
+            this.save();
+        }
+    }
+
+    componentDidMount(){
+        var self = this;
+
+        var form = this.refs.form;
+        var nameInput = this.refs.nameInput;
+        var nameMsg = this.refs.nameMsg;
+
+        var labelInput = this.refs.labelInput;
+
+
+        jQuery(form).find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
+
+        jQuery(this.refs.modal).on('show.bs.modal', function(){
+            validator.clear(nameInput, nameMsg);
+            labelInput.value = '';
+            self.refs.errorHolder.style.display = 'none';
+        });
+
+        jQuery(this.refs.modal).on('shown.bs.modal', function(){
+            nameInput.focus();
+        });
+    }
+
     render(){
         return (
             <div ref="modal" className="modal fade"

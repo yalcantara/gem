@@ -4,14 +4,14 @@ if(typeof(window.rest) === 'undefined' || window.rest == null){
 }
 
 rest.assignMessage = function(jqXHR){
-    var h = response.jqXHR.getResponseHeader('X-Application-Message');
+    var h = jqXHR.getResponseHeader('X-Application-Message');
     if(h == null){
-        h = response.jqXHR.getResponseHeader('x-application-message');
+        h = jqXHR.getResponseHeader('x-application-message');
     }
 
     if(h == 'true'){
         //adding the appMsg only if the X-Application-Message header is found.
-        jqXHR.appMsg = responseText;
+        jqXHR.appMsg = jqXHR.responseText;
     }else{
         jqXHR.appMsg = null;
     }

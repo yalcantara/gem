@@ -6,6 +6,14 @@ if(typeof(window.validator) === 'undefined' || window.validator == null){
 
 
 
+validator.clear = function(input, msg){
+    input.value = '';
+    input.classList.remove('is-invalid');
+    if(msg){
+        msg.style.display = 'none';
+    }
+}
+
 validator.required = function(input, msg, text){
     var val = input.value;
 
