@@ -6,19 +6,22 @@ import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.gem.commons.Json;
 import com.gem.commons.TxResult;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.PipeLine;
 import com.gem.commons.mongo.Query;
 import com.gem.commons.rest.ConflictException;
 import com.gem.config.ws.entities.Property;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCursor;
 
 @Service
 public class PropertyService {
@@ -82,13 +85,26 @@ public class PropertyService {
 
 		name = Verifier.checkId("name", name);
 
-		Json q = new Json();
-		q.put("name", name); // app's name
-		q.put("properties.name", name); // prop's name
+		PipeLine p = new PipeLine();
+		p.match("name", app);
+		p.project("properties");
+		p.unwind("properties");
+		p.match("properties.name", name);
+		p.count();
 
-		long count = apps.count(q);
+		AggregateIterable<Document> a = apps.agregate(p, Document.class);
 
-		return count > 0;
+		try (MongoCursor<Document> iter = a.iterator()) {
+			if (iter.hasNext()) {
+				Document ans = iter.next();
+				
+				long val = ((Number) ans.get("count")).longValue();
+				
+				return val >= 1;
+			}
+
+			throw new InternalServerErrorException("Could not count documents.");
+		}
 	}
 	
 	public boolean isAvailable(String app, String name) {
