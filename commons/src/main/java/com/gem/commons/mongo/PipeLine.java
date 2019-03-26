@@ -1,9 +1,10 @@
 package com.gem.commons.mongo;
 
+import com.gem.commons.Json;
+import org.bson.Document;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.bson.Document;
 
 public class PipeLine {
 	
@@ -19,6 +20,18 @@ public class PipeLine {
 		Document filter = new Document();
 		filter.put(field, val);
 		doc.put("$match", filter);
+		list.add(doc);
+	}
+
+
+	public void project(Json fields){
+		Document doc = new Document();
+
+		Document fd = new Document();
+
+		fd.putAll(fields.toMap());
+
+		doc.put("$project", fd);
 		list.add(doc);
 	}
 	
@@ -48,7 +61,7 @@ public class PipeLine {
 	public void unwind(String field) {
 		Document doc = new Document();
 
-		doc.put("$unwind", "$" + field);
+		doc.put("$unwind", field);
 		list.add(doc);
 	}
 

@@ -1,14 +1,13 @@
 package com.gem.commons.mongo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import com.gem.commons.Json;
+import com.mongodb.client.AggregateIterable;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.gem.commons.Json;
-import com.mongodb.client.AggregateIterable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public interface Collection {
 	
@@ -71,7 +70,7 @@ public interface Collection {
 	List<Document> agregateAndCollect(Json pipeline);
 	
 	<T> List<T> agregateAndCollect(PipeLine pipeline, Class<T> resultClass);
-	
+
 	default <T> List<T> aggregateAndConvertObject(PipeLine pipeline, String field,
 			Class<T> resultClass) {
 		List<Document> list = agregateAndCollect(pipeline, Document.class);
