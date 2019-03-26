@@ -1,19 +1,5 @@
 package com.gem.config.ws.services;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
-import java.util.Date;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import com.gem.commons.TxResult;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.PipeLine;
@@ -22,6 +8,18 @@ import com.gem.commons.rest.ConflictException;
 import com.gem.config.ws.entities.Property;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCursor;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import javax.inject.Inject;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
+import java.util.Date;
+import java.util.List;
+
+import static com.gem.commons.Checker.checkParamNotNull;
 
 @Service
 public class PropertyService {
@@ -62,7 +60,7 @@ public class PropertyService {
 		PipeLine pipe = new PipeLine();
 		pipe.match("name", app);
 		pipe.projects("_id", "properties");
-		pipe.unwind("properties");
+		pipe.unwind("$properties");
 		pipe.match("properties.name", name);
 		
 		List<Property> list = apps.aggregateAndConvertObject(pipe, "properties", Property.class);
@@ -88,7 +86,7 @@ public class PropertyService {
 		PipeLine p = new PipeLine();
 		p.match("name", app);
 		p.project("properties");
-		p.unwind("properties");
+		p.unwind("$properties");
 		p.match("properties.name", name);
 		p.count();
 

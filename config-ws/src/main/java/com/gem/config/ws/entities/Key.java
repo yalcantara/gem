@@ -1,16 +1,14 @@
 package com.gem.config.ws.entities;
 
+import org.bson.types.ObjectId;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+
 
 /**
  * The persistent class for the keys database table.
@@ -23,33 +21,25 @@ public class Key implements Serializable {
 	private static final long serialVersionUID = -2087932688014108583L;
 	
 	@Id
-	private Long id;
+	private ObjectId _id;
 	
 	private String name;
 	private String label;
 	private String value;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "creation_date")
 	private Date creationDate;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "last_update")
+
 	private Date lastUpdate;
-	
-	@ManyToOne
-	@JoinColumn(name = "prop_id")
-	private Property property;
 	
 	public Key() {
 	}
 	
-	public Long getId() {
-		return this.id;
+	public ObjectId getId() {
+		return this._id;
 	}
 	
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(ObjectId id) {
+		this._id = id;
 	}
 	
 	public Date getCreationDate() {
@@ -91,13 +81,17 @@ public class Key implements Serializable {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	
-	public Property getProperty() {
-		return this.property;
+
+	@Override
+	public String toString() {
+		return "Key{" +
+				"_id=" + _id +
+				", name='" + name + '\'' +
+				", label='" + label + '\'' +
+				", value='" + value + '\'' +
+				", creationDate=" + creationDate +
+				", lastUpdate=" + lastUpdate +
+
+				'}';
 	}
-	
-	public void setProperty(Property property) {
-		this.property = property;
-	}
-	
 }
