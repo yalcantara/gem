@@ -53,7 +53,7 @@ public class KeyService {
 
         p.project(cols);
 
-        List<Key> list = apps.agregateAndCollect(p, Key.class);
+        List<Key> list = apps.aggregateAndCollect(p, Key.class);
 
         return list;
     }

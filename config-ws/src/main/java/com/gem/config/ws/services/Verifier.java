@@ -1,8 +1,8 @@
 package com.gem.config.ws.services;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
 import javax.ws.rs.BadRequestException;
+
+import static com.gem.commons.Checker.checkParamNotNull;
 
 public class Verifier {
 
@@ -26,6 +26,7 @@ public class Verifier {
 	// 3 - The dot(.) and dash(-) characters can not be sequential.
 	// 4 - It must end with a letter of digit.
 	public static String checkId(String name, String id) {
+		checkParamNotNull("name", name);
 		checkParamNotNull("id", id);
 		id = id.toLowerCase().strip();
 

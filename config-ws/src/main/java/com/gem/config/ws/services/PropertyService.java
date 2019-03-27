@@ -1,5 +1,6 @@
 package com.gem.config.ws.services;
 
+import com.gem.commons.Json;
 import com.gem.commons.TxResult;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.PipeLine;
@@ -31,12 +32,34 @@ public class PropertyService {
 	@Inject
 	private AppService appSrv;
 	
-	private void include(Query q) {
-		q.include("properties._id");
-		q.include("properties.name");
-		q.include("properties.label");
-		q.include("properties.lastUpdate");
-		q.include("properties.creationDate");
+	private void project(PipeLine p) {
+
+		Json c = new Json();
+
+		c.put("_id", 			"$properties._id");
+		c.put("name", 			"$properties.name");
+		c.put("label", 			"$properties.label");
+		c.put("lastUpdate",		"$properties.lastUpdate");
+		c.put("creationDate",	"$properties.creationDate");
+
+		p.project(c);
+	}
+
+	private PipeLine pipe(String app){
+
+		PipeLine p = new PipeLine();
+		p.match("name", app);
+
+		Json p1 = new Json();
+		p1.put("properties", 1);
+		p1.put("_id", 0); //app's id (we don't need it)
+
+		p.project(p1);
+		p.unwind("$properties");
+		project(p);
+
+		return p;
+
 	}
 
 	public List<Property> list(String app) {
@@ -45,34 +68,29 @@ public class PropertyService {
 		app = Verifier.checkId("app", app);
 		appSrv.checkExist(app);
 		
-		Query q = new Query();
-		q.filter("name", app); // app
-		include(q);
+		PipeLine p = pipe(app);
 
-		List<Property> list = apps.findOneAndConvertList(q, "properties", Property.class);
+		List<Property> list = apps.aggregateAndCollect(p, Property.class);
 		return list;
 	}
 
 	public Property get(String app, String name) {
 		checkParamNotNull("app", name);
 		checkParamNotNull("name", name);
-		
-		PipeLine pipe = new PipeLine();
-		pipe.match("name", app);
-		pipe.projects("_id", "properties");
-		pipe.unwind("$properties");
-		pipe.match("properties.name", name);
-		
-		List<Property> list = apps.aggregateAndConvertObject(pipe, "properties", Property.class);
-		if (list.isEmpty()) {
+
+		app = Verifier.checkId("app", app);
+		name = Verifier.checkId("name", name);
+		appSrv.checkExist(app);
+
+
+		PipeLine p = pipe(app);
+		p.match("name", name);
+		List<Property> list = apps.aggregateAndCollect(p, Property.class);
+		if (list.isEmpty() || list.get(0) == null) {
 			throw new NotFoundException("The property '" + name + "' does not exist.");
 		}
 
 		Property dto = list.get(0);
-		
-		if (dto == null) {
-			throw new NotFoundException("The property '" + name + "' does not exist.");
-		}
 		
 		return dto;
 	}
@@ -81,16 +99,14 @@ public class PropertyService {
 		checkParamNotNull("app", name);
 		checkParamNotNull("name", name);
 
+		app = Verifier.checkId("app", app);
 		name = Verifier.checkId("name", name);
 
-		PipeLine p = new PipeLine();
-		p.match("name", app);
-		p.project("properties");
-		p.unwind("$properties");
-		p.match("properties.name", name);
+		PipeLine p = pipe(app);
+		p.match("name", name);
 		p.count();
 
-		AggregateIterable<Document> a = apps.agregate(p, Document.class);
+		AggregateIterable<Document> a = apps.aggregate(p, Document.class);
 
 		try (MongoCursor<Document> iter = a.iterator()) {
 			if (iter.hasNext()) {
@@ -106,12 +122,6 @@ public class PropertyService {
 	}
 	
 	public boolean isAvailable(String app, String name) {
-
-		// here we need to call for check the app's name because it should have
-		// been created before asking for configuration's new name. If not, it
-		// is ok to launch the ConflictException by the AppService.
-		appSrv.checkIsAvailable(app);
-
 		return exist(app, name) == false;
 	}
 	
@@ -122,19 +132,14 @@ public class PropertyService {
 		}
 	}
 
-	public Property create(String app, String name) {
-		Property prop = new Property();
-		prop.setName(name);
-		return create(app, prop);
-	}
-
 	public Property create(String app, Property prop) {
 		checkParamNotNull("app", app);
 		checkParamNotNull("prop", prop);
 		checkParamNotNull("prop.name", prop.getName());
 
 		String name = prop.getName();
-		
+
+		app = Verifier.checkId("app", app);
 		name = Verifier.checkId("name", name);
 
 		appSrv.checkExist(app);
@@ -182,8 +187,12 @@ public class PropertyService {
 		
 		String newName = prop.getName();
 		newName = Verifier.checkId("newName", newName);
-		
-		checkIsAvailable(app, newName);
+
+		appSrv.checkExist(app);
+		if(newName.equals(name) == false) {
+			//It's a name change. We have to make sure that the new name is available.
+			checkIsAvailable(app, newName);
+		}
 
 		Query q = new Query();
 		q.filter("name", app); // app

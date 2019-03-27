@@ -1,23 +1,17 @@
 package com.gem.commons.mongo;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import com.gem.commons.Grid;
+import com.gem.commons.Json;
+import com.mongodb.client.*;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.gem.commons.Grid;
-import com.gem.commons.Json;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoIterable;
-import com.mongodb.client.result.DeleteResult;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static com.gem.commons.Checker.checkParamNotNull;
 
 public class CollectionImpl implements Collection {
 	
@@ -98,10 +92,7 @@ public class CollectionImpl implements Collection {
 		return findOne(q, _resultClass);
 	}
 	
-	@Override
-	public Object findOne(Query query) {
-		return findOne(query, _resultClass);
-	}
+
 	
 	@Override
 	public Object findOne(ObjectId id) {
@@ -168,25 +159,6 @@ public class CollectionImpl implements Collection {
 	}
 	
 	@Override
-	public long update(String filterKey, Object filterValue, Json query) {
-		checkParamNotNull("filterKey", filterKey);
-		checkParamNotNull("filterValue", filterValue);
-		checkParamNotNull("query", query);
-		return update(filterKey, filterValue, query.toBson());
-	}
-
-	@Override
-	public long update(String filterKey, Object filterValue, Document query) {
-		checkParamNotNull("filterKey", filterKey);
-		checkParamNotNull("filterValue", filterValue);
-		checkParamNotNull("query", query);
-		Document f = new Document();
-		f.put(filterKey, filterValue);
-
-		return col.updateOne(f, query).getModifiedCount();
-	}
-	
-	@Override
 	public long update(Query query) {
 		checkParamNotNull("query", query);
 		query.checkUpdate();
@@ -212,40 +184,21 @@ public class CollectionImpl implements Collection {
 		return res.getDeletedCount() > 0;
 	}
 	
+
 	@Override
 	@SuppressWarnings("unchecked")
-	public AggregateIterable<Document> agregate(Json pipeline) {
-		checkParamNotNull("pipeline", pipeline);
-		
-		Document bson = pipeline.toBson();
-		
-		AggregateIterable<Document> ans = col.aggregate(Arrays.asList(bson), Document.class);
-		return ans;
-	}
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> AggregateIterable<T> agregate(PipeLine pipeline, Class<T> resultClass) {
+	public <T> AggregateIterable<T> aggregate(PipeLine pipeline, Class<T> resultClass) {
 		checkParamNotNull("pipeline", pipeline);
 		
 		AggregateIterable<T> ans = col.aggregate(pipeline.toList(), resultClass);
 		return ans;
 	}
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<Document> agregateAndCollect(Json pipeline) {
-		
-		AggregateIterable<Document> agg = agregate(pipeline);
-		
-		return collect(agg, DEFAULT_LIMIT);
-		
-	}
+
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> agregateAndCollect(PipeLine pipeline, Class<T> resultClass) {
-		AggregateIterable<T> agg = agregate(pipeline, resultClass);
+	public <T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass) {
+		AggregateIterable<T> agg = aggregate(pipeline, resultClass);
 		
 		return collect(agg, DEFAULT_LIMIT);
 	}
