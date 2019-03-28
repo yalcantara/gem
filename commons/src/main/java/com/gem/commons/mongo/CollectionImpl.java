@@ -164,23 +164,16 @@ public class CollectionImpl implements Collection {
 		query.checkUpdate();
 		return col.updateOne(query.getFilter(), query.getUpdate()).getModifiedCount();
 	}
+
 	
 	@Override
-	public boolean deleteOne(Query query) {
-		checkParamNotNull("query", query);
-		query.checkFilter();
-		DeleteResult res = col.deleteOne(query.getFilter());
-		return res.getDeletedCount() > 0;
-	}
-	
-	@Override
-	public boolean deleteOne(String filterKey, Object filterValue) {
+	public boolean deleteMany(String filterKey, Object filterValue) {
 		checkParamNotNull("filterKey", filterKey);
 		checkParamNotNull("filterValue", filterValue);
 		
 		Document f = new Document();
 		f.put(filterKey, filterValue);
-		DeleteResult res = col.deleteOne(f);
+		DeleteResult res = col.deleteMany(f);
 		return res.getDeletedCount() > 0;
 	}
 	

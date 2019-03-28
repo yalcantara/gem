@@ -9,6 +9,14 @@ import java.util.List;
 public class PipeLine {
 	
 	private final List<Document> list;
+
+	private PipeLine(List<Document> list){
+		this.list = new ArrayList<>();
+
+		for(Document d:list){
+			this.list.add(d);
+		}
+	}
 	
 	public PipeLine() {
 		list = new ArrayList<>();
@@ -75,8 +83,14 @@ public class PipeLine {
 		doc.put("$count", out);
 		list.add(doc);
 	}
+
+
 	
 	public List<Document> toList() {
 		return new ArrayList<Document>(list);
+	}
+
+	public PipeLine clone(){
+		return new PipeLine(list);
 	}
 }

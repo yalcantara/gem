@@ -2,6 +2,8 @@ package com.gem.commons.mongo;
 
 import com.gem.commons.Json;
 import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCursor;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -39,12 +41,31 @@ public interface Collection {
 	
 	long update(Query query);
 	
-	boolean deleteOne(String filterKey, Object filterValue);
-	
-	boolean deleteOne(Query query);
+	boolean deleteMany(String filterKey, Object filterValue);
+
 
 	
 	<T> AggregateIterable<T> aggregate(PipeLine pipeline, Class<T> resultClass);
+
+	default long count(PipeLine pipeline){
+
+		PipeLine p = pipeline.clone();
+		p.count();
+
+		AggregateIterable<Document> a = aggregate(p, Document.class);
+
+		try (MongoCursor<Document> iter = a.iterator()) {
+			if (iter.hasNext()) {
+				Document ans = iter.next();
+
+				long val = ((Number) ans.get("count")).longValue();
+
+				return val;
+			}
+
+			return 0;
+		}
+	}
 
 	<T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass);
 	

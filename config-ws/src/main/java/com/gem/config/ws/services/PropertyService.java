@@ -7,15 +7,11 @@ import com.gem.commons.mongo.PipeLine;
 import com.gem.commons.mongo.Query;
 import com.gem.commons.rest.ConflictException;
 import com.gem.config.ws.entities.Property;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.MongoCursor;
-import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.util.Date;
 import java.util.List;
@@ -104,21 +100,9 @@ public class PropertyService {
 
 		PipeLine p = pipe(app);
 		p.match("name", name);
-		p.count();
+		long count = apps.count(p);
 
-		AggregateIterable<Document> a = apps.aggregate(p, Document.class);
-
-		try (MongoCursor<Document> iter = a.iterator()) {
-			if (iter.hasNext()) {
-				Document ans = iter.next();
-				
-				long val = ((Number) ans.get("count")).longValue();
-				
-				return val >= 1;
-			}
-
-			throw new InternalServerErrorException("Could not count documents.");
-		}
+		return count > 0;
 	}
 	
 	public boolean isAvailable(String app, String name) {
@@ -225,8 +209,13 @@ public class PropertyService {
 
 		Query q = new Query();
 		q.filter("name", app); // app
-		q.filter("properties.name", name); // property
+
+		Json criteria = new Json();
+		criteria.put("name", name);
+
+		q.pull("properties", criteria);
 		
-		return apps.deleteOne(q);
+		long ans =  apps.update(q);
+		return ans > 0;
 	}
 }

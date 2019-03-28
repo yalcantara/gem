@@ -1,13 +1,13 @@
 package com.gem.commons.mongo;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
-import java.io.Serializable;
-
+import com.gem.commons.Json;
+import com.mongodb.annotations.NotThreadSafe;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.mongodb.annotations.NotThreadSafe;
+import java.io.Serializable;
+
+import static com.gem.commons.Checker.checkParamNotNull;
 
 @NotThreadSafe
 public class Query implements Serializable {
@@ -104,6 +104,12 @@ public class Query implements Serializable {
 	public void exclude(String field) {
 		checkParamNotNull("field", field);
 		fields().put(field, 0);
+	}
+
+	public void pull(String field, Json criteria){
+		Document c = new Document();
+		c.put(field, criteria.toBson());
+		up().put("$pull", c);
 	}
 
 	public void checkUpdate() {

@@ -165,6 +165,6 @@ public class AppService {
 		checkParamNotNull("name", name);
 		
 		name = Verifier.checkId("name", name);
-		return apps.deleteOne("name", name);
+		return apps.deleteMany("name", name);
 	}
 }
