@@ -55,6 +55,7 @@ class AppRouter extends React.Component{
     // ----- App -----
     createAppHandler(record){
         this.state.apps.push(record);
+        record.$properties = [];
         utils.sortField(this.state.apps, 'name');
         this.setState({apps: this.state.apps});
     }

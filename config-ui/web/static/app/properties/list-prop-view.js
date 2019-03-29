@@ -9,6 +9,23 @@ class ListPropView extends React.Component{
         this.refs.createDialog.show();
     }
 
+
+    remove(record){
+        var c;
+        c = "Are you sure you want to ";
+        c += "<span style='font-weight: bold; color: red'>delete</span> ";
+        c += "the property <span style='font-weight: bold;'>";
+        c += record.name;
+        c += "</span>.";
+
+        var self = this;
+        showConfirmDialog({content: c, title: 'Delete App'}).then(()=>{
+            rest.httpDelete('/rest/config/apps/' + record.name).then(()=>{
+                self.props.deleteHandler(record);
+            });
+        });
+    }
+
     componentDidMount(){
         this.props.mountHandler(this.props.match);
     }
