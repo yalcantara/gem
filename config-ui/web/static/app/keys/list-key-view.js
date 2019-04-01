@@ -24,7 +24,13 @@ class ListKeyView extends React.Component{
         var self = this;
         showConfirmDialog({content: c, title: 'Delete Key'}).then(()=>{
             var app = self.props.crtApp.name;
-            rest.httpDelete('/rest/config/apps/' + app + '/properties/' + record.name).then(()=>{
+            var prop = self.props.crtProp.name;
+
+            var url;
+            url = '/rest/config/apps/' + app + '/properties/' + prop +'/keys/';
+            url += record.name;
+
+            rest.httpDelete(url).then(()=>{
                 self.props.deleteHandler(record);
             });
         });
@@ -55,8 +61,16 @@ class ListKeyView extends React.Component{
 
         return (
             <div>
-                <NewKeyDialog ref="createDialog" crtApp={this.props.crtApp} crtProp={this.props.crtProp} createHandler={this.props.createHandler}/>
-                <EditPropDialog ref="editDialog" crtApp={this.props.crtApp} updateHandler={this.props.updateHandler}/>
+                <NewKeyDialog ref="createDialog"
+                    crtApp={this.props.crtApp}
+                    crtProp={this.props.crtProp}
+                    createHandler={this.props.createHandler}/>
+
+                <EditKeyDialog ref="editDialog"
+                    crtApp={this.props.crtApp}
+                    crtProp={this.props.crtProp}
+                    updateHandler={this.props.updateHandler}/>
+                    
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <a href="#" onClick={(e)=>{e.preventDefault(); this.create();}}>
                         <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>

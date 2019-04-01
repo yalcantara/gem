@@ -149,6 +149,27 @@ class AppRouter extends React.Component{
     }
     // ----------------
 
+    // ----- Keys -----
+    createKeyHandler(record){
+        var list = this.state.crtProp.$keys;
+        list.push(record);
+        utils.sortField(list, 'name');
+        this.setState({keys: list});
+    }
+
+    deleteKeyHandler(record){
+        var list = this.state.crtProp.$keys;
+        utils.findAndDelete(list, 'name', record.name);
+        this.setState({keys: list});
+    }
+
+    updatePropHandler(record){
+        var list = this.state.crtProp.$keys;
+        var prev = utils.findAndReplaceOne(list, '_id', record);
+        record.$keys = prev.$keys;
+        this.setState({keys: list});
+    }
+    // ----------------
 
 
     mountHandler(match){
