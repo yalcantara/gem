@@ -2,6 +2,7 @@ package com.gem.config.ws.services;
 
 import com.gem.commons.Json;
 import com.gem.commons.TxResult;
+import com.gem.commons.Utils;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.PipeLine;
 import com.gem.commons.mongo.Query;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +30,7 @@ public class PropertyService {
 	@Inject
 	private AppService appSrv;
 	
-	private void project(PipeLine p) {
+	private void project(PipeLine p, boolean includeKeys) {
 
 		Json c = new Json();
 
@@ -37,11 +39,20 @@ public class PropertyService {
 		c.put("label", 			"$properties.label");
 		c.put("lastUpdate",		"$properties.lastUpdate");
 		c.put("creationDate",	"$properties.creationDate");
+		//optional fields
+		if(includeKeys){
+			c.put("keys",	"$properties.keys");
+		}
 
 		p.project(c);
 	}
 
-	private PipeLine pipe(String app){
+	PipeLine pipe(String app){
+		return pipe(app, false);
+	}
+
+	PipeLine pipe(String app, boolean includeKeys){
+		checkParamNotNull("app", app);
 
 		PipeLine p = new PipeLine();
 		p.match("name", app);
@@ -52,7 +63,8 @@ public class PropertyService {
 
 		p.project(p1);
 		p.unwind("$properties");
-		project(p);
+
+		project(p, includeKeys);
 
 		return p;
 
@@ -71,7 +83,7 @@ public class PropertyService {
 	}
 
 	public Property get(String app, String name) {
-		checkParamNotNull("app", name);
+		checkParamNotNull("app", app);
 		checkParamNotNull("name", name);
 
 		app = Verifier.checkId("app", app);
@@ -91,6 +103,26 @@ public class PropertyService {
 		return dto;
 	}
 
+	public Property get(String app, ObjectId id) {
+		checkParamNotNull("app", app);
+		checkParamNotNull("id", id);
+
+		app = Verifier.checkId("app", app);
+		appSrv.checkExist(app);
+
+
+		PipeLine p = pipe(app);
+		p.match("_id", id);
+		List<Property> list = apps.aggregateAndCollect(p, Property.class);
+		if (list.isEmpty() || list.get(0) == null) {
+			throw new NotFoundException("The property does not exist.");
+		}
+
+		Property dto = list.get(0);
+
+		return dto;
+	}
+
 	public boolean exist(String app, String name) {
 		checkParamNotNull("app", name);
 		checkParamNotNull("name", name);
@@ -104,11 +136,14 @@ public class PropertyService {
 
 		return count > 0;
 	}
-	
-	public boolean isAvailable(String app, String name) {
-		return exist(app, name) == false;
+
+	public void checkExist(String app, String name) {
+
+		if (exist(app, name) == false) {
+			throw new BadRequestException("The property '" + name + "' does not exist.");
+		}
 	}
-	
+
 	public void checkIsAvailable(String app, String name) {
 
 		if (exist(app, name)) {
@@ -129,10 +164,7 @@ public class PropertyService {
 		appSrv.checkExist(app);
 		checkIsAvailable(app, name);
 		
-		String label = prop.getLabel();
-		if (label != null) {
-			label = label.strip();
-		}
+		String label = Utils.strip(prop.getLabel());
 		
 		Property ent = new Property();
 		ent.setId(new ObjectId());
@@ -147,7 +179,7 @@ public class PropertyService {
 		q.filter("name", app);
 		q.push("properties", ent);
 		
-		long ans = apps.update(q);
+		long ans = apps.updateOne(q);
 
 		if (ans != 1) {
 			throw new ConflictException("The app have been previously modified.");
@@ -156,45 +188,45 @@ public class PropertyService {
 		return ent;
 	}
 
-	public TxResult<Property> put(String app, String name, Property prop) {
+	public TxResult<Property> put(String app, ObjectId id, Property prop) {
 		checkParamNotNull("app", app);
-		checkParamNotNull("name", name);
+		checkParamNotNull("id", id);
 		checkParamNotNull("prop", prop);
 		checkParamNotNull("prop.name", prop.getName());
 		
-		name = Verifier.checkId("name", name);
-		if (isAvailable(app, name)) {
-			prop.setName(name);
-			Property ent = create(app, prop);
-			return new TxResult<>(true, ent);
-		}
-		
-		String newName = prop.getName();
-		newName = Verifier.checkId("newName", newName);
+		String name = Verifier.checkId("name", prop.getName());
 
 		appSrv.checkExist(app);
-		if(newName.equals(name) == false) {
-			//It's a name change. We have to make sure that the new name is available.
-			checkIsAvailable(app, newName);
+
+		Property ref = get(app, id);
+		if(ref.getName().equals(name) == false){
+			// it's a rename, we have to check if the name is available
+			checkIsAvailable(app, name);
 		}
+
+
+
+
+		String label = Utils.strip(prop.getLabel());
 
 		Query q = new Query();
 		q.filter("name", app); // app
-		q.filter("properties.name", name);
+		q.filter("properties._id", id);
 
 		// The field properties is an array. But thanks to the filter, hopefully
 		// it will bring just 1 property.
-		q.update("properties.name", newName);
-		q.update("properties.label", prop.getLabel());
-		q.update("properties.lastUpdate", new Date());
+		q.update("properties.$.name", name);
+		q.update("properties.$.label", label);
+		q.update("properties.$.lastUpdate", new Date());
 
-		long count = apps.update(q);
+		long count = apps.updateOne(q);
 
 		if (count == 1) {
 			Property ans = new Property();
-			ans.setName(newName);
+			ans.setId(id);
+			ans.setName(name);
 
-			return new TxResult<Property>(false, ans);
+			return new TxResult<>(false, ans);
 		}
 
 		throw new ConflictException("The app or the property have been previously modified.");
@@ -215,7 +247,7 @@ public class PropertyService {
 
 		q.pull("properties", criteria);
 		
-		long ans =  apps.update(q);
+		long ans =  apps.updateOne(q);
 		return ans > 0;
 	}
 }
