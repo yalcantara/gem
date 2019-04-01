@@ -1,5 +1,5 @@
 
-class NewPropDialog extends React.Component{
+class NewKeyDialog extends React.Component{
 
     constructor(props){
         super(props);
@@ -25,14 +25,15 @@ class NewPropDialog extends React.Component{
         }
 
         var name = this.refs.nameInput.value.trim();
-        var label = this.refs.labelInput.value.trim();
+        var value = this.refs.valueInput.value.trim();
 
-        var prop = {name: name, label: label};
+        var ent = {name: name, value: value};
         
         var self = this;
         //this.props refer to properties (babel) passed by React.
         var app = this.props.crtApp.name;
-        rest.postAndGet('/rest/config/apps/' + app +'/properties', prop).then(function(res){
+        var prop = this.props.crtProp.name;
+        rest.postAndGet('/rest/config/apps/' + app +'/properties/' + prop + '/keys', ent).then(function(res){
             self.refs.nameMsg.style.display = 'none';
             jQuery(self.refs.modal).modal('hide');
             self.props.createHandler(res.data);
@@ -61,14 +62,14 @@ class NewPropDialog extends React.Component{
         var nameInput = this.refs.nameInput;
         var nameMsg = this.refs.nameMsg;
 
-        var labelInput = this.refs.labelInput;
+        var valueInput = this.refs.valueInput;
 
 
         jQuery(form).find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
 
         jQuery(this.refs.modal).on('show.bs.modal', function(){
             validator.clear(nameInput, nameMsg);
-            labelInput.value = '';
+            valueInput.value = '';
             self.refs.errorHolder.style.display = 'none';
         });
 
@@ -84,7 +85,7 @@ class NewPropDialog extends React.Component{
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">
                         <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title">Create New Property</span>
+                            <span className="modal-title">Create New Key</span>
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -99,7 +100,7 @@ class NewPropDialog extends React.Component{
                                 </div>
                                 <div className="form-group">
                                     <label style={{width: '100%'}}>
-                                        Label:  <input ref="labelInput" className="form-control" type="text"/>
+                                        Value:  <textarea rows="4" ref="valueInput" className="form-control" type="text"></textarea>
                                     </label>
                                 </div>
                                 <div ref="errorHolder" className="alert alert-danger" style={{display: 'none'}}></div>

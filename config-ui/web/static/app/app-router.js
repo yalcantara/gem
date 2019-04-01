@@ -6,34 +6,51 @@ class AppRouter extends React.Component{
             $properties: []
         },
 
-        match: null
+        props: [],
+        keys: []
     };
+
+    rootPathCalled = false;
 
     constructor(props){
         super(props);
 
-        var self = this;
-        rest.get('/rest/config/apps').then(function(res){
-            var list = res.data;
-            utils.sortField(list, 'name');
-            //setting empty $properties field.
-            list.forEach((e)=>e.$properties=[]);
-            self.setState({apps: list});
-            self.handlePath();
-        });
+        
     }
 
-    handlePath(){
-        var match = this.state.match;
-        if(utils.isEmpty(match) || utils.isEmpty(match.params) ){
-            return;
+    handlePropPath(match){
+        var self = this;
+        if(match.params.app && match.params.prop){
+
+            var appName = match.params.app;
+            var propName = match.params.prop;
+            var prop = utils.find(this.state.props, 'name', propName);
+            if(prop){
+
+                self.state.crtProp = prop;
+                this.setState({crtProp: prop});
+                if(utils.isEmpty(prop.$keys)){
+                    rest.get('/rest/config/apps/' + appName + '/properties/' + propName +'/keys').then(function(res){
+                        var list = res.data;
+                        utils.sortField(list, 'name');
+                        prop.$keys = list;
+
+                        self.state.keys = list;
+                        self.setState({keys: list});
+                    });
+                }
+            }
         }
+    }
+
+    handleAppPath(match){
+        var self = this;
           
         if(match.params.app){
             var appName = match.params.app;
             var app = utils.find(this.state.apps, 'name', appName);
-            var self = this;
             if(app){
+                this.state.crtApp = app;
                 this.setState({crtApp: app});
                 if(utils.isEmpty(app.$properties)){
                     rest.get('/rest/config/apps/' + appName + '/properties').then(function(res){
@@ -42,11 +59,47 @@ class AppRouter extends React.Component{
                         app.$properties = list;
                         //setting empty $keys field.
                         list.forEach((e)=>e.$keys=[]);
-                        self.setState({crtApp: app});
+
+                        self.state.props = list;
+                        self.setState({props: list});
+
+                        self.handlePropPath(match);
                     });
+                }else{
+                    self.handlePropPath(match);
                 }
             }
         }
+    }
+
+    handleRootPath(match){
+        //this path should always be called.
+
+        var self = this;
+        if(utils.isEmpty(this.state.apps)){
+            rest.get('/rest/config/apps').then(function(res){
+                var list = res.data;
+                utils.sortField(list, 'name');
+                //setting empty $properties field.
+                list.forEach((e)=>e.$properties=[]);
+
+                self.state.apps = list;
+                self.setState({apps: list});
+
+
+                self.handleAppPath(match);
+            });
+        }else{
+            self.handleAppPath(match);
+        }
+    }
+
+    handlePath(match){
+        if(utils.isEmpty(match) || utils.isEmpty(match.params) ){
+            return;
+        }
+        
+        this.handleRootPath(match);
     }
 
  
@@ -54,14 +107,16 @@ class AppRouter extends React.Component{
     
     // ----- App -----
     createAppHandler(record){
-        this.state.apps.push(record);
-        utils.sortField(this.state.apps, 'name');
-        this.setState({apps: this.state.apps});
+        var list = this.state.apps;
+        list.push(record);
+        utils.sortField(list, 'name');
+        this.setState({apps: list});
     }
 
     deleteAppHandler(record){
-        var arr = utils.findAndDelete(this.state.apps, 'name', record.name);
-        this.setState({apps: arr});
+        var list = this.state.apps;
+        utils.findAndDelete(list, 'name', record.name);
+        this.setState({apps: list});
     }
 
     updateAppHandler(record){
@@ -74,18 +129,30 @@ class AppRouter extends React.Component{
     
     // ----- Prop -----
     createPropHandler(record){
-        var props = this.state.crtApp.$properties;
-        props.push(record);
-        utils.sortField(props, 'name');
-        this.setState({crtApp: this.state.crtApp});
+        var list = this.state.crtApp.$properties;
+        list.push(record);
+        utils.sortField(list, 'name');
+        this.setState({props: list});
+    }
+
+    deletePropHandler(record){
+        var list = this.state.crtApp.$properties;
+        utils.findAndDelete(list, 'name', record.name);
+        this.setState({props: list});
+    }
+
+    updatePropHandler(record){
+        var list = this.state.crtApp.$properties;
+        var prev = utils.findAndReplaceOne(list, '_id', record);
+        record.$keys = prev.$keys;
+        this.setState({props: list});
     }
     // ----------------
 
 
 
-    propsMountHandler(match){
-        this.state.match = match;
-        this.handlePath();
+    mountHandler(match){
+        this.handlePath(match);
     }
 
     render(){
@@ -93,23 +160,42 @@ class AppRouter extends React.Component{
             <ReactRouterDOM.HashRouter ref="router">
                     <ReactRouterDOM.Route exact path="/:sub(apps|)" ref="appList"
                         render={(props)=>(
-                            <ListAppView {...props} list={this.state.apps} 
+                            <ListAppView {...props} 
+                                list={this.state.apps} 
 
                                 createHandler={(record)=>this.createAppHandler(record)}
                                 deleteHandler={(record)=>this.deleteAppHandler(record)}
-                                updateHandler={(record)=>this.updateAppHandler(record)}/>
+                                updateHandler={(record)=>this.updateAppHandler(record)}
+                                
+                                mountHandler={(match)=>this.mountHandler(match)}/>
                         )}/>
 
 
-                    <ReactRouterDOM.Route path="/apps/:app/properties" ref="propList"
+                    <ReactRouterDOM.Route exact path="/apps/:app/properties" ref="propList"
                         render={(props)=>(
-                            <ListPropView {...props} crtApp={this.state.crtApp}
+                            <ListPropView {...props} 
+                                list={this.state.props} 
+                                crtApp={this.state.crtApp}
 
                                 createHandler={(record)=>this.createPropHandler(record)}
                                 deleteHandler={(record)=>this.deletePropHandler(record)}
                                 updateHandler={(record)=>this.updatePropHandler(record)}
 
-                                mountHandler={(match)=>this.propsMountHandler(match)} />
+                                mountHandler={(match)=>this.mountHandler(match)} />
+                        )}/>
+
+                    <ReactRouterDOM.Route exact path="/apps/:app/properties/:prop/keys" ref="keyList"
+                        render={(props)=>(
+                            <ListKeyView {...props} 
+                                list={this.state.keys} 
+                                crtApp={this.state.crtApp} 
+                                crtProp={this.state.crtProp}
+
+                                createHandler={(record)=>this.createKeyHandler(record)}
+                                deleteHandler={(record)=>this.deleteKeyHandler(record)}
+                                updateHandler={(record)=>this.updateKeyHandler(record)}
+
+                                mountHandler={(match)=>this.mountHandler(match)} />
                         )}/>
             </ReactRouterDOM.HashRouter>
         );

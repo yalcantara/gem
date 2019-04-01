@@ -1,11 +1,15 @@
 
-class NewPropDialog extends React.Component{
+class EditPropDialog extends React.Component{
+
+
+    crt = {};
 
     constructor(props){
         super(props);
     }
 
-    show(){
+    show(record){
+        this.crt = record;
         jQuery(this.refs.modal).modal('show');
     }
 
@@ -27,15 +31,16 @@ class NewPropDialog extends React.Component{
         var name = this.refs.nameInput.value.trim();
         var label = this.refs.labelInput.value.trim();
 
-        var prop = {name: name, label: label};
+        var ent = {name: name, label: label};
         
         var self = this;
-        //this.props refer to properties (babel) passed by React.
         var app = this.props.crtApp.name;
-        rest.postAndGet('/rest/config/apps/' + app +'/properties', prop).then(function(res){
+        const id = this.crt._id;
+
+        rest.putAndGet('/rest/config/apps/' + app +'/properties/' + id, ent).then(function(res){
             self.refs.nameMsg.style.display = 'none';
             jQuery(self.refs.modal).modal('hide');
-            self.props.createHandler(res.data);
+            self.props.updateHandler(res.data);
         }).catch(function(res){
             var msg = 'There was an error in the system. Please try again later.';
             if(res && res.appMsg){
@@ -58,17 +63,24 @@ class NewPropDialog extends React.Component{
         var self = this;
 
         var form = this.refs.form;
+        var prevInput = this.refs.prevInput;
         var nameInput = this.refs.nameInput;
         var nameMsg = this.refs.nameMsg;
 
         var labelInput = this.refs.labelInput;
-
-
+        
+        
+        
         jQuery(form).find('input, button').on('keypress', (event)=>{self.handleKeyPress(event)});
-
+        
         jQuery(this.refs.modal).on('show.bs.modal', function(){
             validator.clear(nameInput, nameMsg);
-            labelInput.value = '';
+            
+            var crt = self.crt;
+            prevInput.value = crt.name;
+            nameInput.value = crt.name;
+            labelInput.value = crt.label;
+            
             self.refs.errorHolder.style.display = 'none';
         });
 
@@ -84,13 +96,18 @@ class NewPropDialog extends React.Component{
                 <div className="modal-dialog modal-dialog-centered modal-sm" role="document">
                     <div className="modal-content">
                         <div className="modal-header" style={{height: '35px', paddingTop: '5px'}}>
-                            <span className="modal-title">Create New Property</span>
+                            <span className="modal-title">Edit Property</span>
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div className="modal-body">
                             <form ref="form" style={{marginBottom: '5px'}}>
+                                <div className="form-group">
+                                    <label style={{width: '100%'}}>
+                                        Property: <input ref="prevInput" className="form-control" type="text" disabled/>
+                                    </label>
+                                </div>
                                 <div className="form-group">
                                     <label style={{width: '100%'}}>
                                         Name: <input ref="nameInput" className="form-control" type="text"/>
@@ -105,7 +122,7 @@ class NewPropDialog extends React.Component{
                                 <div ref="errorHolder" className="alert alert-danger" style={{display: 'none'}}></div>
                                 <div style={{display: 'flex', justifyContent: 'flex-end'}}>
                                     <button type="button" className="btn btn-secondary" data-dismiss="modal" style={{marginRight: '5px'}}>Close</button>
-                                    <button onClick={()=>{this.save()}} type="button" className="btn btn-success">Save</button>
+                                    <button onClick={()=>{this.save()}} type="button" className="btn btn-success">Update</button>
                                 </div>
                             </form> 
                         </div>

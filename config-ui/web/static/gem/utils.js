@@ -85,22 +85,22 @@ utils.findAndReplaceOne = function(arr, field, val){
 };
 
 utils.findAndDelete = function(arr, field, val){
-    var ans = [];
+   
+    var removed = 0;
     if(arr && arr.length > 0){
         for(var i =0; i < arr.length; i++){
             var other = arr[i];
             if(other){
                 if(other[field] === val){
-                    continue;
+                    //since we are modifiying the array, we have to reduce the index 
+                    //so it can be added back again and continue right at 
+                    //where the element was deleted.
+                    arr.splice(i, 1);
+                    i--;
                 }
-                ans.push(other);
-            }else{
-                ans.push(other);
             }
         }
     }
-
-    return ans;
 };
 
 
