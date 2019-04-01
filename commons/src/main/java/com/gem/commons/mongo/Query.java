@@ -6,6 +6,8 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.gem.commons.Checker.checkParamNotNull;
 
@@ -18,6 +20,8 @@ public class Query implements Serializable {
 	private Document _update;
 	private Document _filter;
 	private Document _fields;
+
+	private List<Document> _arrayFilters;
 	
 	public Query() {
 	}
@@ -52,6 +56,14 @@ public class Query implements Serializable {
 		}
 		
 		return _fields;
+	}
+
+	private List<Document> af() {
+		if (_arrayFilters == null) {
+			_arrayFilters = new ArrayList<>();
+		}
+
+		return _arrayFilters;
 	}
 
 	public void _id(ObjectId id) {
@@ -112,6 +124,27 @@ public class Query implements Serializable {
 		up().put("$pull", c);
 	}
 
+	public void addArrayFilter(String name, Json json){
+
+		Document f = new Document();
+		f.put(name, json.toBson());
+		af().add(f);
+	}
+
+	public void addArrayFilter(String name, Document json){
+
+		Document f = new Document();
+		f.put(name, json);
+		af().add(f);
+	}
+
+	public void addArrayFilter(String field, String val){
+
+		Document f = new Document();
+		f.put(field, val);
+		af().add(f);
+	}
+
 	public void checkUpdate() {
 		if (_update == null) {
 			throw new RuntimeException("No update actions have been made to this query.");
@@ -144,5 +177,13 @@ public class Query implements Serializable {
 		}
 
 		return new Document(_fields);
+	}
+
+	public List<Document> getArrayFilters(){
+		if(_arrayFilters == null){
+			return null;
+		}
+
+		return _arrayFilters;
 	}
 }

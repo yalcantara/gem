@@ -3,6 +3,7 @@ package com.gem.commons.mongo;
 import com.gem.commons.Grid;
 import com.gem.commons.Json;
 import com.mongodb.client.*;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -162,7 +163,21 @@ public class CollectionImpl implements Collection {
 	public long updateOne(Query query) {
 		checkParamNotNull("query", query);
 		query.checkUpdate();
-		return col.updateOne(query.getFilter(), query.getUpdate()).getModifiedCount();
+
+		Document filter = query.getFilter();
+		if(filter == null){
+			filter = new Document();
+		}
+		Document update = query.getUpdate();
+		List<Document> list = query.getArrayFilters();
+		if(list == null){
+			return col.updateOne(filter, update).getModifiedCount();
+		}
+
+		UpdateOptions uo = new UpdateOptions();
+		uo.arrayFilters(list);
+
+		return col.updateOne(filter, update, uo).getModifiedCount();
 	}
 
 	

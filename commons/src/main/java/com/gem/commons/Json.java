@@ -229,6 +229,11 @@ public class Json implements Iterable<String>, Serializable {
 			return;
 		}
 
+		if(val instanceof  ObjectId){
+			put(key, (ObjectId) val);
+			return;
+		}
+
 		throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
 	}
 
@@ -243,6 +248,11 @@ public class Json implements Iterable<String>, Serializable {
 	}
 
 	public void put(String key, String val) {
+		checkParamNotNull("key", key);
+		map.put(key, val);
+	}
+
+	public void put(String key, ObjectId val) {
 		checkParamNotNull("key", key);
 		map.put(key, val);
 	}
