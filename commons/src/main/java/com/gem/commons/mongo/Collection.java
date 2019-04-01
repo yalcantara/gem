@@ -39,7 +39,7 @@ public interface Collection {
 	
 	void insert(Object entity);
 	
-	long update(Query query);
+	long updateOne(Query query);
 	
 	boolean deleteMany(String filterKey, Object filterValue);
 

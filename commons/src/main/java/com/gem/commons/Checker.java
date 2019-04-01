@@ -9,13 +9,10 @@ public class Checker {
 	}
 
 	public static void checkPathParam(String name, Object value) {
-		checkPathParam(name, value,
-			"The segment '" + name + "' was not specified in the URL path.");
-	}
-	
-	public static void checkPathParam(String name, Object value, String message) {
+		String msg = "The segment '" + name + "' was not specified in the URL path.";
+
 		if (value == null) {
-			throw new BadRequestException(message);
+			throw new BadRequestException(msg);
 		}
 	}
 	

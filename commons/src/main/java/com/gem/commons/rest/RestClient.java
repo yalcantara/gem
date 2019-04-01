@@ -1,10 +1,8 @@
 package com.gem.commons.rest;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
-import java.net.URI;
-import java.util.List;
-import java.util.Map.Entry;
+import com.gem.commons.Json;
+import com.gem.commons.Lazy;
+import com.gem.commons.Retriever;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -13,10 +11,11 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.List;
+import java.util.Map.Entry;
 
-import com.gem.commons.Json;
-import com.gem.commons.Lazy;
-import com.gem.commons.Retriever;
+import static com.gem.commons.Checker.checkParamNotNull;
 
 public class RestClient {
 

@@ -8,6 +8,21 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 
 public class Utils {
+
+
+	public static String strip(String str){
+		if(str == null){
+			return null;
+		}
+
+		var s = str.strip();
+
+		if(s.isEmpty() || s.isBlank()){
+			return null;
+		}
+
+		return s;
+	}
 	
 	public static String getStackTrace(Throwable t) {
 		if (t == null) {

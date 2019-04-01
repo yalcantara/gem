@@ -159,7 +159,7 @@ public class CollectionImpl implements Collection {
 	}
 	
 	@Override
-	public long update(Query query) {
+	public long updateOne(Query query) {
 		checkParamNotNull("query", query);
 		query.checkUpdate();
 		return col.updateOne(query.getFilter(), query.getUpdate()).getModifiedCount();
