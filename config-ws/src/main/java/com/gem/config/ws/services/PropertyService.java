@@ -204,9 +204,6 @@ public class PropertyService {
 			checkIsAvailable(app, name);
 		}
 
-
-
-
 		String label = Utils.strip(prop.getLabel());
 
 		Query q = new Query();

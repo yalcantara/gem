@@ -1,9 +1,11 @@
 package com.gem.config.ws.controllers;
 
 
+import com.gem.commons.TxResult;
 import com.gem.commons.rest.AbstractController;
 import com.gem.config.ws.entities.Key;
 import com.gem.config.ws.services.KeyService;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -74,5 +76,30 @@ public class KeysController extends AbstractController {
         String name = dto.getName();
 
         return Response.created(locationForPost(name)).build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response update(@PathParam("app") String app,
+                           @PathParam("prop") String prop,
+                           @PathParam("id") String id,
+                           Key data) {
+        checkId(app, prop, id);
+        ObjectId oid = new ObjectId(id);
+        TxResult<Key> tx = srv.put(app, prop, oid, data);
+
+        String ans = tx.getResult().getName();
+        return putResponse(tx, ans);
+    }
+
+    @DELETE
+    @Path("/{name}")
+    public Response delete(@PathParam("app") String app,
+                           @PathParam("prop") String prop,
+                           @PathParam("name") String name) {
+        check(app, prop, name);
+        boolean ans = srv.delete(app, prop, name);
+        return Response.ok(ans).build();
     }
 }

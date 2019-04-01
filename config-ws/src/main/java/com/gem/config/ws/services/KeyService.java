@@ -1,6 +1,7 @@
 package com.gem.config.ws.services;
 
 import com.gem.commons.Json;
+import com.gem.commons.TxResult;
 import com.gem.commons.Utils;
 import com.gem.commons.mongo.Collection;
 import com.gem.commons.mongo.PipeLine;
@@ -90,7 +91,6 @@ public class KeyService {
     public List<Key> list(String app, String prop) {
         PipeLine p = preProcess(app, prop);
 
-        System.out.println(p);
         List<Key> list = apps.aggregateAndCollect(p, Key.class);
         return list;
     }
@@ -182,7 +182,7 @@ public class KeyService {
         Query q = new Query();
         q.filter("name", app);
         q.filter("properties.name", prop);
-        q.push("properties.keys", ent);
+        q.push("properties.$.keys", ent);
 
         long ans = apps.updateOne(q);
 
@@ -191,6 +191,75 @@ public class KeyService {
         }
 
         return ent;
+    }
+
+    public TxResult<Key> put(String app, String prop, ObjectId id, Key key) {
+        checkParamNotNull("app", app);
+        checkParamNotNull("prop", prop);
+        checkParamNotNull("id", id);
+        checkParamNotNull("key", key);
+        checkParamNotNull("key.name", key.getName());
+
+        String name = Verifier.checkId("name", key.getName());
+
+        propSrv.checkExist(app, prop);
+
+        Key ref = get(app, prop, id);
+        if(ref.getName().equals(name) == false){
+            // it's a rename, we have to check if the name is available
+            checkIsAvailable(app, prop, name);
+        }
+
+        String value = Utils.strip(key.getValue());
+
+        Query q = new Query();
+
+        // The field properties is an array. But thanks to the filter, hopefully
+        // it will bring just 1 property.
+        q.update("properties.$[p].keys.$[k].name", name);
+
+        Json k = new Json();
+        k.put("k._id", id);
+
+        Json p = new Json();
+        p.put("p.name", prop);
+
+        q.addArrayFilter("p", p);
+        q.addArrayFilter("k", k);
+
+        long count = apps.updateOne(q);
+
+        if (count == 1) {
+            Key ans = new Key();
+            ans.setId(id);
+            ans.setName(name);
+
+            return new TxResult<>(false, ans);
+        }
+
+        throw new ConflictException("The property or key have been previously modified.");
+    }
+
+    public boolean delete(String app, String prop, String name) {
+        checkParamNotNull("app", app);
+        checkParamNotNull("prop", prop);
+        checkParamNotNull("name", name);
+
+        app = Verifier.checkId("app", app);
+        prop = Verifier.checkId("prop", prop);
+        name = Verifier.checkId("name", name);
+
+        Query q = new Query();
+        q.filter("name", app); // app
+        q.filter("properties.name", prop);
+
+        Json criteria = new Json();
+        criteria.put("name", name);
+
+        q.pull("properties.$.keys", criteria);
+
+        long ans =  apps.updateOne(q);
+        return ans > 0;
     }
 
 }
