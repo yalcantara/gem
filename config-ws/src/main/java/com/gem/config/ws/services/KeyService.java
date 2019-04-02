@@ -213,19 +213,17 @@ public class KeyService {
         String value = Utils.strip(key.getValue());
 
         Query q = new Query();
+        q.filter("name", app); //app
 
         // The field properties is an array. But thanks to the filter, hopefully
         // it will bring just 1 property.
         q.update("properties.$[p].keys.$[k].name", name);
+        q.update("properties.$[p].keys.$[k].value", value);
+        q.update("properties.$[p].keys.$[k].lastUpdate", new Date());
 
-        Json k = new Json();
-        k.put("k._id", id);
 
-        Json p = new Json();
-        p.put("p.name", prop);
-
-        q.addArrayFilter("p", p);
-        q.addArrayFilter("k", k);
+        q.addArrayFilter("p.name", prop);
+        q.addArrayFilter("k._id", id);
 
         long count = apps.updateOne(q);
 
