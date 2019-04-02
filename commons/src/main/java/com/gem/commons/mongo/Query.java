@@ -124,21 +124,25 @@ public class Query implements Serializable {
 		up().put("$pull", c);
 	}
 
-	public void addArrayFilter(String name, Json json){
+	public void addArrayFilter(Json json){
 
-		Document f = new Document();
-		f.put(name, json.toBson());
+		Document f = json.toBson();
 		af().add(f);
 	}
 
-	public void addArrayFilter(String name, Document json){
+	public void addArrayFilter(Document json){
 
-		Document f = new Document();
-		f.put(name, json);
-		af().add(f);
+		af().add(json);
 	}
 
 	public void addArrayFilter(String field, String val){
+
+		Document f = new Document();
+		f.put(field, val);
+		af().add(f);
+	}
+
+	public void addArrayFilter(String field, ObjectId val){
 
 		Document f = new Document();
 		f.put(field, val);

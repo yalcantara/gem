@@ -22,295 +22,342 @@ import java.util.Map.Entry;
 
 public class Json implements Iterable<String>, Serializable {
 
-	private static final long serialVersionUID = -2237588925474667391L;
+    private static final long serialVersionUID = -2237588925474667391L;
 
-	private static final ObjectMapper plainMapper;
+    private static final ObjectMapper plainMapper;
 
-	private static final ObjectMapper mapper;
-	private static final ObjectWriter writter;
-	
-	static {
-		mapper = new ObjectMapper();
-		mapper.enable(SerializationFeature.INDENT_OUTPUT);
-		config(mapper);
-		writter = mapper.writerWithDefaultPrettyPrinter();
-		
-		plainMapper = new ObjectMapper();
-		config(plainMapper);
-	}
+    private static final ObjectMapper mapper;
+    private static final ObjectWriter writter;
 
-	private static void config(ObjectMapper m) {
-		SimpleModule mongo = new SimpleModule("Custom Mongo Module");
-		mongo.addSerializer(ObjectId.class, ToStringSerializer.instance);
-		m.registerModule(mongo);
+    static {
+        mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        config(mapper);
+        writter = mapper.writerWithDefaultPrettyPrinter();
 
-		m.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		m.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
-		m.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
-		m.setVisibility(PropertyAccessor.SETTER, Visibility.NONE);
-	}
+        plainMapper = new ObjectMapper();
+        config(plainMapper);
+    }
 
-	public static ObjectMapper getMapper() {
-		return mapper;
-	}
+    private static void config(ObjectMapper m) {
+        SimpleModule mongo = new SimpleModule("Custom Mongo Module");
+        mongo.addSerializer(ObjectId.class, ToStringSerializer.instance);
+        m.registerModule(mongo);
+
+        m.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+        m.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
+        m.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
+        m.setVisibility(PropertyAccessor.SETTER, Visibility.NONE);
+    }
+
+    public static ObjectMapper getMapper() {
+        return mapper;
+    }
 
 
+    @SuppressWarnings("rawtypes")
+    public static Json parse(String json) {
 
-	@SuppressWarnings("rawtypes")
-	public static Json parse(String json) {
-		
-		try {
-			
-			LinkedHashMap map = mapper.readValue(json, LinkedHashMap.class);
-			return new Json(map);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static <T> T parse(String json, Class<T> clazz) {
-		
-		try {
-			
-			T obj = mapper.readValue(json, clazz);
-			return obj;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
 
-	public static <T> T parse(InputStream is, Class<T> clazz)
-			throws JsonParseException, JsonMappingException, IOException {
+            LinkedHashMap map = mapper.readValue(json, LinkedHashMap.class);
+            return new Json(map);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-		T obj = mapper.readValue(is, clazz);
-		return obj;
-		
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static Map parseAsMap(String json) {
+    public static <T> T parse(String json, Class<T> clazz) {
 
-		try {
-			return mapper.readValue(json, LinkedHashMap.class);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static String write(List list) {
-		
-		if (list == null) {
-			return "null";
-		}
+        try {
 
-		if (list.size() == 0) {
-			return "[]";
-		}
-		
-		try {
-			return writter.writeValueAsString(list);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+            T obj = mapper.readValue(json, clazz);
+            return obj;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static String write(Object obj) {
-		
-		try {
-			return writter.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static String write(Map map) {
-		
-		if (map == null) {
-			return "null";
-		}
+    public static <T> T parse(InputStream is, Class<T> clazz)
+            throws JsonParseException, JsonMappingException, IOException {
 
-		if (map.isEmpty()) {
-			return "{}";
-		}
-		
-		try {
-			return writter.writeValueAsString(map);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static String plainWrite(Map map) {
-		
-		if (map == null) {
-			return "null";
-		}
+        T obj = mapper.readValue(is, clazz);
+        return obj;
 
-		if (map.isEmpty()) {
-			return "{}";
-		}
-		
-		try {
+    }
 
-			return plainMapper.writeValueAsString(map);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public static void plainWrite(OutputStream out, Map map)
-			throws JsonProcessingException, IOException {
-		
-		if (map == null) {
-			out.write("null".getBytes());
-			return;
-		}
-		
-		if (map.isEmpty()) {
-			out.write("{}".getBytes());
-			return;
-		}
-		
-		plainMapper.writeValue(out, map);
-		
-	}
+    @SuppressWarnings("rawtypes")
+    public static Map parseAsMap(String json) {
 
-	public static List<Map<String, Object>> convert(List<Json> json) {
-		List<Map<String, Object>> list = new ArrayList<>();
+        try {
+            return mapper.readValue(json, LinkedHashMap.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-		json.stream().forEach(e -> list.add(e.toMap()));
+    @SuppressWarnings("rawtypes")
+    public static String write(List list) {
 
-		return list;
-	}
+        if (list == null) {
+            return "null";
+        }
 
-	private final Map<String, Object> map;
+        if (list.size() == 0) {
+            return "[]";
+        }
 
-	// private constructor, only for internal use.
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Json(LinkedHashMap map) {
-		this.map = map;
-	}
+        try {
+            return writter.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public Json() {
-		map = new LinkedHashMap<>();
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Json(Map map) {
-		this.map = new LinkedHashMap<>();
+    public static String write(Object obj) {
 
-		for (Object raw : map.entrySet()) {
-			Entry e = (Entry) raw;
+        try {
+            return writter.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-			String key = String.valueOf(e.getKey());
-			Object val = e.getValue();
+    @SuppressWarnings("rawtypes")
+    public static String write(Map map) {
 
-			put(key, val);
-		}
-	}
+        if (map == null) {
+            return "null";
+        }
 
-	public void put(String key, Object val) {
-		if (val == null) {
-			put(key, (String) null);
-			return;
-		}
+        if (map.isEmpty()) {
+            return "{}";
+        }
 
-		if (val instanceof Integer) {
-			put(key, (Integer) val);
-			return;
-		}
+        try {
+            return writter.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-		if (val instanceof Long) {
-			put(key, (Long) val);
-			return;
-		}
+    @SuppressWarnings("rawtypes")
+    public static String plainWrite(Map map) {
 
-		if(val instanceof  ObjectId){
-			put(key, (ObjectId) val);
-			return;
-		}
+        if (map == null) {
+            return "null";
+        }
 
-		throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
-	}
+        if (map.isEmpty()) {
+            return "{}";
+        }
 
-	public void put(String key, Integer val) {
-		checkParamNotNull("key", key);
-		map.put(key, val);
-	}
-	
-	public void put(String key, Long val) {
-		checkParamNotNull("key", key);
-		map.put(key, val);
-	}
+        try {
 
-	public void put(String key, String val) {
-		checkParamNotNull("key", key);
-		map.put(key, val);
-	}
+            return plainMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public void put(String key, ObjectId val) {
-		checkParamNotNull("key", key);
-		map.put(key, val);
-	}
+    @SuppressWarnings("rawtypes")
+    public static void plainWrite(OutputStream out, Map map)
+            throws JsonProcessingException, IOException {
 
-	public Integer getInt(String key) {
-		checkParamNotNull("key", key);
-		Object val = map.get(key);
-		return (Integer) val;
-	}
+        if (map == null) {
+            out.write("null".getBytes());
+            return;
+        }
 
-	public String getString(String key) {
-		checkParamNotNull("key", key);
-		Object val = map.get(key);
-		return (String) val;
-	}
+        if (map.isEmpty()) {
+            out.write("{}".getBytes());
+            return;
+        }
 
-	public Object getObject(String key) {
-		checkParamNotNull("key", key);
-		Object val = map.get(key);
-		return val;
-	}
+        plainMapper.writeValue(out, map);
 
-	public Set<String> keys() {
-		return map.keySet();
-	}
+    }
 
-	private void checkParamNotNull(String name, Object val) {
-		if (val == null) {
-			throw new NullPointerException("The parameter '" + name + "' can not be null.");
-		}
-	}
+    public static List<Map<String, Object>> convert(List<Json> json) {
+        List<Map<String, Object>> list = new ArrayList<>();
 
-	public Map<String, Object> toMap() {
-		return new LinkedHashMap<String, Object>(map);
-	}
-	
-	public Document toBson() {
+        json.stream().forEach(e -> list.add(e.toMap()));
 
-		Document b = new Document();
-		
-		for (Entry<String, Object> ent : entrySet()) {
-			b.put(ent.getKey(), ent.getValue());
-		}
+        return list;
+    }
 
-		return b;
-	}
+    private final Map<String, Object> map;
 
-	@Override
-	public Iterator<String> iterator() {
-		return map.keySet().iterator();
-	}
+    // private constructor, only for internal use.
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Json(LinkedHashMap map) {
+        this.map = map;
+    }
 
-	public Set<Entry<String, Object>> entrySet() {
-		return map.entrySet();
-	}
-	
-	@Override
-	public String toString() {
-		return Json.write(map);
-	}
+    public Json() {
+        map = new LinkedHashMap<>();
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Json(Map map) {
+        this.map = new LinkedHashMap<>();
+
+        for (Object raw : map.entrySet()) {
+            Entry e = (Entry) raw;
+
+            String key = String.valueOf(e.getKey());
+            Object val = e.getValue();
+
+            put(key, val);
+        }
+    }
+
+    private boolean allowed(Object val) {
+        if (val == null) {
+            return true;
+        }
+
+        if (val instanceof String || val instanceof Number ||
+                val instanceof ObjectId || val instanceof Json) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void checkAllowed(Object val) {
+        if(allowed(val)){
+            return;
+        }
+        throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
+    }
+
+    public void put(String key, Object val) {
+        checkAllowed(val);
+
+        if (val == null) {
+            put(key, (String) null);
+            return;
+        }
+
+        if (val instanceof Integer) {
+            put(key, (Integer) val);
+            return;
+        }
+
+        if (val instanceof Long) {
+            put(key, (Long) val);
+            return;
+        }
+
+        if (val instanceof ObjectId) {
+            put(key, (ObjectId) val);
+            return;
+        }
+
+        if (val instanceof Json) {
+            put(key, (Json) val);
+            return;
+        }
+
+
+    }
+
+    public void put(String key, Integer val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
+    }
+
+    public void put(String key, Long val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
+    }
+
+    public void put(String key, String val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
+    }
+
+    public void put(String key, Json val) {
+        checkParamNotNull("key", key);
+        map.put(key, val.toMap());
+    }
+
+
+    public void put(String key, ObjectId val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
+    }
+
+    public void put(String key, List arr) {
+        checkParamNotNull("key", key);
+        if (arr == null) {
+            map.put(key, null);
+        } else {
+            List l = new ArrayList();
+            for (Object e : arr) {
+                checkAllowed(e);
+
+                if(e instanceof Json){
+                    l.add(((Json) e).toMap());
+                }else{
+                    l.add(e);
+                }
+
+
+            }
+            map.put(key, l);
+        }
+    }
+
+    public Integer getInt(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return (Integer) val;
+    }
+
+    public String getString(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return (String) val;
+    }
+
+    public Object getObject(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return val;
+    }
+
+    public Set<String> keys() {
+        return map.keySet();
+    }
+
+    private void checkParamNotNull(String name, Object val) {
+        if (val == null) {
+            throw new NullPointerException("The parameter '" + name + "' can not be null.");
+        }
+    }
+
+    public Map<String, Object> toMap() {
+        return new LinkedHashMap<String, Object>(map);
+    }
+
+    public Document toBson() {
+
+        return Document.parse(write(map));
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+        return map.keySet().iterator();
+    }
+
+    public Set<Entry<String, Object>> entrySet() {
+        return map.entrySet();
+    }
+
+    @Override
+    public String toString() {
+        return Json.write(map);
+    }
 }
