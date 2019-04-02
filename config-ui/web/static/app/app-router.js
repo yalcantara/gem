@@ -163,7 +163,7 @@ class AppRouter extends React.Component{
         this.setState({keys: list});
     }
 
-    updatePropHandler(record){
+    updateKeyHandler(record){
         var list = this.state.crtProp.$keys;
         var prev = utils.findAndReplaceOne(list, '_id', record);
         record.$keys = prev.$keys;
