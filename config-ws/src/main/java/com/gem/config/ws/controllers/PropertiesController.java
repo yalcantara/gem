@@ -63,7 +63,7 @@ public class PropertiesController extends AbstractController {
 		Property dto = srv.create(app, data);
 		String name = dto.getName();
 		
-		return Response.created(locationForPut(name)).build();
+		return Response.created(locationForPost(name)).build();
 	}
 	
 	@PUT
