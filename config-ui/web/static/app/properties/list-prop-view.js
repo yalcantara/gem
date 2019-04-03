@@ -46,10 +46,10 @@ class ListPropView extends React.Component{
                             <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
-                    <td style={{paddingLeft: '15px', paddingRight: '15px'}}>
+                    <td style={{paddingLeft: '15px', paddingRight: '15px', wordBreak: 'break-all'}}>
                         <ReactRouterDOM.Link to={'/apps/' + app +'/properties/' +record.name + '/keys'}>{record.name}</ReactRouterDOM.Link>
                     </td>
-                    <td>{record.label}</td>
+                    <td style={{wordBreak: 'break-all'}}>{record.label}</td>
                     <td style={{textAlign: 'right'}}>{moment(new Date(record.lastUpdate)).fromNow()}</td>
                     <td style={{textAlign: 'right'}}>{utils.formatDate(record.creationDate)}</td>
                 </tr>
@@ -60,11 +60,16 @@ class ListPropView extends React.Component{
             <div>
                 <NewPropDialog ref="createDialog" crtApp={this.props.crtApp} createHandler={this.props.createHandler}/>
                 <EditPropDialog ref="editDialog" crtApp={this.props.crtApp} updateHandler={this.props.updateHandler}/>
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    <a href="#" onClick={(e)=>{e.preventDefault(); this.create();}}>
-                        <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>
-                        Create
-                    </a>
+                <div style={{marginBottom: '10px'}}>
+                    <div style={{display: 'inline-block'}}>
+                        <Nav match={this.props.match}/>
+                    </div>
+                    <div style={{display: 'inline-block', float: 'right'}}>
+                        <a href="#" onClick={(e)=>{e.preventDefault(); this.create();}}>
+                            <i className="fas fa-plus-circle" style={{marginRight: '5px'}}></i>
+                            Create
+                        </a>
+                    </div>
                 </div>
                 <table className="table table-striped table-bordered table-hover table-sm">
                     <thead>
@@ -72,8 +77,8 @@ class ListPropView extends React.Component{
                             <td style={{width: '60px'}}></td>
                             <td>Name</td>
                             <td>Label</td>
-                            <td style={{minWidth: '140px'}}>Last Update</td>
-                            <td style={{minWidth: '250px'}}>Creation Date</td>
+                            <td style={{minWidth: '160px'}}>Last Update</td>
+                            <td style={{minWidth: '290px'}}>Creation Date</td>
                         </tr>
                     </thead>
                     <tbody>

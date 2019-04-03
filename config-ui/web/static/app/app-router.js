@@ -14,8 +14,6 @@ class AppRouter extends React.Component{
 
     constructor(props){
         super(props);
-
-        
     }
 
     handlePropPath(match){
@@ -38,6 +36,10 @@ class AppRouter extends React.Component{
                         self.state.keys = list;
                         self.setState({keys: list});
                     });
+                }else{
+                    var list = prop.$keys;
+                    self.state.keys = list;
+                    self.setState({keys: list});
                 }
             }
         }
@@ -66,6 +68,9 @@ class AppRouter extends React.Component{
                         self.handlePropPath(match);
                     });
                 }else{
+                    var list = app.$properties;
+                    self.state.props = list;
+                    self.setState({props: list});
                     self.handlePropPath(match);
                 }
             }
