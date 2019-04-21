@@ -18,7 +18,7 @@ import static com.gem.commons.Checker.checkPathParam;
 
 @Component
 @Path("/apps/{app}/properties/{prop}/keys")
-public class KeysController extends AbstractController {
+public class KeyController extends AbstractController {
 
 
     @Inject
