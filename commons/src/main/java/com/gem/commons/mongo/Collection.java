@@ -34,6 +34,8 @@ public interface Collection {
 
 	
 	long count(Json query);
+
+	long count(Query query);
 	
 	void insert(Json json);
 	

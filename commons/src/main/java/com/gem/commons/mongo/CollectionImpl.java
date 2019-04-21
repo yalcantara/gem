@@ -132,8 +132,17 @@ public class CollectionImpl implements Collection {
 	@Override
 	public long count(Json query) {
 		checkParamNotNull("query", query);
-		
+
 		Document bson = query.toBson();
+		long count = col.countDocuments(bson);
+		return count;
+	}
+
+	@Override
+	public long count(Query query) {
+		checkParamNotNull("query", query);
+
+		Document bson = query.getFilter();
 		long count = col.countDocuments(bson);
 		return count;
 	}
