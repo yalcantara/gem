@@ -234,10 +234,18 @@ public class Grid {
 		System.out.print(toString());
 	}
 
+	public void print(int maxRows, int maxCols) {
+		System.out.print(toString(maxRows, maxCols));
+	}
+
 	@Override
 	public String toString() {
+		return toString(MAX_PRINT_ROWS, MAX_PRINT_COLS);
+	}
+
+	public String toString(int maxRows, int maxCols) {
 		StringBuilder sb = new StringBuilder(1024);
-		print(sb, MAX_PRINT_ROWS, MAX_PRINT_COLS);
+		print(sb, maxRows, maxCols);
 		return sb.toString();
 	}
 

@@ -2,6 +2,8 @@ package com.gem.commons.mongo;
 
 import com.gem.commons.Json;
 import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.DistinctIterable;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -12,17 +14,34 @@ public interface Collection {
 	
 	int DEFAULT_LIMIT = 1000;
 	int DEFAULT_ROW_PRINT = 50;
+
+
+	default List list(){
+		return MongoUtils.collect(find());
+	}
+
+	default List list(int max){
+		return MongoUtils.collect(find(max), max);
+	}
+
+	default List list(Query query){
+		return MongoUtils.collect(find(query), query.getLimit());
+	}
+
+	default <T> List<T> list(Query query, Class<T> resultClass){
+		return MongoUtils.collect(find(query, resultClass), query.getLimit());
+	}
+
+	@SuppressWarnings("rawtypes")
+	FindIterable find();
 	
 	@SuppressWarnings("rawtypes")
-	List find();
+	FindIterable find(int max);
 	
 	@SuppressWarnings("rawtypes")
-	List find(int max);
+	FindIterable find(Query query);
 	
-	@SuppressWarnings("rawtypes")
-	List find(Query query);
-	
-	<T> List<T> find(Query query, Class<T> resultClass);
+	<T> FindIterable<T> find(Query query, Class<T> resultClass);
 	
 	Object findOne(ObjectId id);
 	
@@ -44,8 +63,9 @@ public interface Collection {
 	long updateOne(Query query);
 
 	
-	boolean deleteMany(String filterKey, Object filterValue);
+	long deleteMany(String filterKey, Object filterValue);
 
+	long deleteMany(Json filter);
 
 	
 	<T> AggregateIterable<T> aggregate(PipeLine pipeline, Class<T> resultClass);
@@ -70,8 +90,21 @@ public interface Collection {
 		}
 	}
 
-	<T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass);
-	
+
+	List aggregateAndCollect(PipeLine pipeline);
+
+	List aggregateAndCollect(PipeLine pipeline, Integer maxValue);
+
+	default <T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass){
+		return aggregateAndCollect(pipeline, resultClass, DEFAULT_LIMIT);
+	}
+
+	<T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass, Integer limit);
+
+	<T> DistinctIterable<T> distinct(String fieldName, Class<T> resultClass);
+
+	<T> DistinctIterable<T> distinct(String fieldName, Document filter, Class<T> resultClass);
+
 	void print();
 	
 }

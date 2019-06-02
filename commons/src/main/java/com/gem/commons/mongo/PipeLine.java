@@ -84,6 +84,27 @@ public class PipeLine {
 		list.add(doc);
 	}
 
+	public void unwind(String field, boolean preserveNullAndEmptyArrays) {
+		Document doc = new Document();
+
+		Document options = new Document();
+		options.put("path", field);
+		options.put("preserveNullAndEmptyArrays", preserveNullAndEmptyArrays);
+
+		doc.put("$unwind", options);
+		list.add(doc);
+	}
+
+	public void group(Json fields) {
+		Document doc = new Document();
+
+		Document id = new Document();
+		id.put("_id", fields.toBson());
+
+		doc.put("$group", id);
+		list.add(doc);
+	}
+
 	public void count() {
 		count("count");
 	}

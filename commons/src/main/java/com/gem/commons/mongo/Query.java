@@ -20,6 +20,7 @@ public class Query implements Serializable {
 	private Document _update;
 	private Document _filter;
 	private Document _fields;
+	private Document _sort;
 
 	private List<Document> _arrayFilters;
 	
@@ -32,6 +33,10 @@ public class Query implements Serializable {
 	
 	public void setLimit(Integer limit) {
 		this.limit = limit;
+	}
+
+	public void setMaxLimit(){
+		setLimit(Integer.MAX_VALUE);
 	}
 	
 	private Document up() {
@@ -58,6 +63,14 @@ public class Query implements Serializable {
 		return _fields;
 	}
 
+	private Document srt(){
+		if(_sort == null){
+			_sort = new Document();
+		}
+
+		return _sort;
+	}
+
 	private List<Document> af() {
 		if (_arrayFilters == null) {
 			_arrayFilters = new ArrayList<>();
@@ -72,6 +85,10 @@ public class Query implements Serializable {
 
 	public void filter(String field, Object val) {
 		fil().put(field, val);
+	}
+
+	public void filter(Json filter) {
+		fil().putAll(filter.toMap());
 	}
 
 	public void update(String field, Object val) {
@@ -122,6 +139,10 @@ public class Query implements Serializable {
 		Document c = new Document();
 		c.put(field, criteria.toBson());
 		up().put("$pull", c);
+	}
+
+	public void sort(String field){
+		srt().put(field, 1);
 	}
 
 	public void addArrayFilter(Json json){
@@ -181,6 +202,14 @@ public class Query implements Serializable {
 		}
 
 		return new Document(_fields);
+	}
+
+	public Document getSort(){
+		if(_sort == null){
+			return null;
+		}
+
+		return new Document(_sort);
 	}
 
 	public List<Document> getArrayFilters(){

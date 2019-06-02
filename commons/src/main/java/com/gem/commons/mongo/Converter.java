@@ -10,6 +10,7 @@ import java.util.List;
 import org.bson.Document;
 
 import com.gem.commons.Json;
+import org.bson.codecs.DocumentCodec;
 
 public class Converter {
 	
@@ -50,5 +51,21 @@ public class Converter {
 			throw new RuntimeException(e);
 		}
 		return t;
+	}
+
+
+	public static Document convert(Object obj){
+		if (obj == null) {
+			return null;
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 8); // 8kb
+
+		Document doc;
+
+			String str = Json.plainWrite(obj);
+			doc = Document.parse(str);
+
+		return doc;
 	}
 }

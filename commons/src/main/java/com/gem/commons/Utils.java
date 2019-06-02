@@ -58,9 +58,15 @@ public class Utils {
 		return String.valueOf(r);
 	}
 
-	public static String toFlipedFormat(Instant date) {
 
+	public static String toFlipedFormat(Instant date){
 		OffsetDateTime d = OffsetDateTime.ofInstant(date, ZoneOffset.UTC);
+		return toFlipedFormat(d);
+	}
+
+	public static String toFlipedFormat(OffsetDateTime d) {
+
+
 		
 		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth())
 				+ " " + fill(d.getHour()) + ":" + fill(d.getMinute()) + ":" + fill(d.getSecond())

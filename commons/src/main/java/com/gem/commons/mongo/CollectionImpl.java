@@ -36,13 +36,13 @@ public class CollectionImpl implements Collection {
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public List find() {
+	public FindIterable find() {
 		return find(DEFAULT_LIMIT);
 	}
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public List find(int limit) {
+	public FindIterable find(int limit) {
 		Query q = new Query();
 		q.setLimit(limit);
 		return find(q);
@@ -50,14 +50,14 @@ public class CollectionImpl implements Collection {
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public List find(Query query) {
+	public FindIterable find(Query query) {
 		checkParamNotNull("query", query);
 		return find(query, _resultClass);
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> find(Query query, Class<T> resultClass) {
+	public <T> FindIterable<T> find(Query query, Class<T> resultClass) {
 		checkParamNotNull("query", query);
 		checkParamNotNull("resultClass", resultClass);
 		
@@ -80,8 +80,14 @@ public class CollectionImpl implements Collection {
 			max = DEFAULT_LIMIT;
 		}
 		iter.limit(max);
-		
-		return collect(iter, max);
+
+
+		Document sort = query.getSort();
+		if(sort != null){
+			iter.sort(sort);
+		}
+
+		return iter;
 	}
 	
 	@Override
@@ -192,14 +198,22 @@ public class CollectionImpl implements Collection {
 
 	
 	@Override
-	public boolean deleteMany(String filterKey, Object filterValue) {
+	public long deleteMany(String filterKey, Object filterValue) {
 		checkParamNotNull("filterKey", filterKey);
 		checkParamNotNull("filterValue", filterValue);
-		
+
 		Document f = new Document();
 		f.put(filterKey, filterValue);
 		DeleteResult res = col.deleteMany(f);
-		return res.getDeletedCount() > 0;
+		return res.getDeletedCount();
+	}
+
+	@Override
+	public long deleteMany(Json filter) {
+		checkParamNotNull("filter", filter);
+
+		DeleteResult res = col.deleteMany(filter.toBson());
+		return res.getDeletedCount();
 	}
 	
 
@@ -213,39 +227,37 @@ public class CollectionImpl implements Collection {
 	}
 
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass) {
-		AggregateIterable<T> agg = aggregate(pipeline, resultClass);
-		
-		return collect(agg, DEFAULT_LIMIT);
+	public List aggregateAndCollect(PipeLine pipeline){
+		return aggregateAndCollect(pipeline, _resultClass);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List collect(MongoIterable iter, Integer limit) {
-		List arr = new ArrayList<>();
-		
-		int capedLimit = (limit == null) ? DEFAULT_LIMIT : limit;
-		try (MongoCursor cur = iter.iterator()) {
-			int count = 0;
-			
-			// let us add another layer of safety by having a counter.
-			while (cur.hasNext() && count < capedLimit) {
-				count++;
-				Object doc = cur.next();
-				
-				arr.add(doc);
-			}
-		}
-		
-		return arr;
+	@Override
+	public List aggregateAndCollect(PipeLine pipeline, Integer limit) {
+		return aggregateAndCollect(pipeline, _resultClass, limit);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> List<T> aggregateAndCollect(PipeLine pipeline, Class<T> resultClass, Integer limit) {
+		AggregateIterable<T> agg = aggregate(pipeline, resultClass);
+		return MongoUtils.collect(agg, limit);
+	}
+
+
+	public <T> DistinctIterable<T> distinct(String fieldName, Class<T> resultClass){
+		return col.distinct(fieldName, resultClass);
+	}
+
+
+	public <T> DistinctIterable<T> distinct(String fieldName, Document filter, Class<T> resultClass){
+		return col.distinct(fieldName, filter, resultClass);
 	}
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void print() {
 		
-		List list = find(DEFAULT_ROW_PRINT);
+		List list = list(DEFAULT_ROW_PRINT);
 		
 		List arr = new ArrayList<>();
 		

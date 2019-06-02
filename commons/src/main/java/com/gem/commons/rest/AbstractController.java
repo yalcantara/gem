@@ -16,9 +16,15 @@ public class AbstractController {
     @Context
     protected UriInfo info;
 
-    protected URI locationForPost(String name) {
+    protected URI locationForPost(String id) {
         UriBuilder b = info.getAbsolutePathBuilder();
-        b.path(name);
+        b.path(id);
+        return b.build();
+    }
+
+    protected URI locationForPost(long id) {
+        UriBuilder b = info.getAbsolutePathBuilder();
+        b.path(String.valueOf(id));
         return b.build();
     }
 

@@ -2,13 +2,11 @@ package com.gem.commons;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -17,8 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 public class Json implements Iterable<String>, Serializable {
 
@@ -40,9 +40,11 @@ public class Json implements Iterable<String>, Serializable {
     }
 
     private static void config(ObjectMapper m) {
-        SimpleModule mongo = new SimpleModule("Custom Mongo Module");
-        mongo.addSerializer(ObjectId.class, ToStringSerializer.instance);
-        m.registerModule(mongo);
+        SimpleModule gemModule = new SimpleModule("The GEM Jackson Module");
+        gemModule.addSerializer(ObjectId.class, ToStringSerializer.instance);
+        gemModule.addSerializer(Json.class, new JsonSerializer());
+        gemModule.addDeserializer(Json.class, new JsonDeserializer());
+        m.registerModule(gemModule);
 
         m.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
         m.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
@@ -52,6 +54,37 @@ public class Json implements Iterable<String>, Serializable {
 
     public static ObjectMapper getMapper() {
         return mapper;
+    }
+
+
+
+    private static class JsonSerializer extends StdSerializer<Json>{
+
+        protected JsonSerializer() {
+            super(Json.class);
+        }
+
+        @Override
+        public void serialize(Json value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObject(value.map);
+        }
+    }
+
+    private static class JsonDeserializer extends StdDeserializer<Json> {
+
+        protected JsonDeserializer() {
+            super(Json.class);
+        }
+
+        @Override
+        public Json deserialize(JsonParser p, DeserializationContext ctx) throws IOException, JsonProcessingException {
+            ObjectCodec codec = p.getCodec();
+
+            LinkedHashMap map = codec.readValue(p, LinkedHashMap.class);
+            return new Json(map);
+        }
+
+
     }
 
 
@@ -124,57 +157,31 @@ public class Json implements Iterable<String>, Serializable {
     }
 
     @SuppressWarnings("rawtypes")
-    public static String write(Map map) {
+    public static String plainWrite(Object obj) {
 
-        if (map == null) {
+        if (obj == null) {
             return "null";
         }
 
-        if (map.isEmpty()) {
-            return "{}";
-        }
-
         try {
-            return writter.writeValueAsString(map);
+
+            return plainMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
     @SuppressWarnings("rawtypes")
-    public static String plainWrite(Map map) {
-
-        if (map == null) {
-            return "null";
-        }
-
-        if (map.isEmpty()) {
-            return "{}";
-        }
-
-        try {
-
-            return plainMapper.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static void plainWrite(OutputStream out, Map map)
+    public static void plainWrite(OutputStream out, Object obj)
             throws JsonProcessingException, IOException {
 
-        if (map == null) {
+        if (obj == null) {
             out.write("null".getBytes());
             return;
         }
 
-        if (map.isEmpty()) {
-            out.write("{}".getBytes());
-            return;
-        }
 
-        plainMapper.writeValue(out, map);
+        plainMapper.writeValue(out, obj);
 
     }
 
@@ -184,6 +191,26 @@ public class Json implements Iterable<String>, Serializable {
         json.stream().forEach(e -> list.add(e.toMap()));
 
         return list;
+    }
+
+    public static <T> List<Json> toListOfJson(List<T> list, Function<T, Json> mapper){
+        checkParamNotNull("list", list);
+        checkParamNotNull("mapper", mapper);
+
+        List<Json> ans = new ArrayList<>();
+
+        if(list instanceof RandomAccess){
+            for(int i =0; i < list.size(); i++){
+                ans.add(mapper.apply(list.get(i)));
+            }
+        }else{
+            for(T t:list){
+                ans.add(mapper.apply(t));
+            }
+        }
+
+
+        return ans;
     }
 
     private final Map<String, Object> map;
@@ -218,7 +245,7 @@ public class Json implements Iterable<String>, Serializable {
         }
 
         if (val instanceof String || val instanceof Number ||
-                val instanceof ObjectId || val instanceof Json) {
+                val instanceof ObjectId || val instanceof Json || val instanceof Instant) {
             return true;
         }
 
@@ -226,7 +253,7 @@ public class Json implements Iterable<String>, Serializable {
     }
 
     private void checkAllowed(Object val) {
-        if(allowed(val)){
+        if (allowed(val)) {
             return;
         }
         throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
@@ -280,7 +307,21 @@ public class Json implements Iterable<String>, Serializable {
 
     public void put(String key, Json val) {
         checkParamNotNull("key", key);
-        map.put(key, val.toMap());
+        if (val == null) {
+            map.put(key, null);
+        } else {
+            map.put(key, val.toMap());
+        }
+    }
+
+    public void put(String key, Instant val) {
+        Date date = (val == null)?null:Date.from(val);
+        put(key, date);
+    }
+
+    public void put(String key, Date val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
     }
 
 
@@ -298,13 +339,13 @@ public class Json implements Iterable<String>, Serializable {
             for (Object e : arr) {
                 checkAllowed(e);
 
-                if(e instanceof Json){
+                if (e instanceof Json) {
                     l.add(((Json) e).toMap());
-                }else{
+                } else if(e instanceof Instant){
+                    l.add(Date.from((Instant)e));
+                }else {
                     l.add(e);
                 }
-
-
             }
             map.put(key, l);
         }
@@ -313,7 +354,19 @@ public class Json implements Iterable<String>, Serializable {
     public Integer getInt(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
-        return (Integer) val;
+        if(val == null){
+            return null;
+        }
+        return ((Number) val).intValue();
+    }
+
+    public Long getLong(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        if(val == null){
+            return null;
+        }
+        return ((Number) val).longValue();
     }
 
     public String getString(String key) {
@@ -328,23 +381,38 @@ public class Json implements Iterable<String>, Serializable {
         return val;
     }
 
+    public List getList(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return (List) val;
+    }
+
     public Set<String> keys() {
         return map.keySet();
     }
 
-    private void checkParamNotNull(String name, Object val) {
+    private static void checkParamNotNull(String name, Object val) {
         if (val == null) {
             throw new NullPointerException("The parameter '" + name + "' can not be null.");
         }
     }
 
     public Map<String, Object> toMap() {
-        return new LinkedHashMap<String, Object>(map);
+        return new LinkedHashMap<>(map);
     }
 
     public Document toBson() {
 
-        return Document.parse(write(map));
+        Document doc = new Document();
+
+        for(Entry e:map.entrySet()){
+            String key = (String)e.getKey();
+            Object val = e.getValue();
+
+            doc.put(key, val);
+        }
+
+        return doc;
     }
 
     @Override
