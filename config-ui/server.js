@@ -36,8 +36,10 @@ app.use(session({
 
 
 // This middleware must go inmediatly after the session middleware.
-// This middleware will check if user's cookie is still saved in browser and user is not set, then automatically log the user out.
-// This usually happens when you stop your express server after login, your cookie still remains saved in the browser.
+// This middleware will check if user's cookie is still saved in browser
+// and user is not set, then automatically log the user out. This usually 
+// happens when you stop your express server after login, your cookie still 
+// remains saved in the browser.
 app.use((req, res, next) => {
     var path = req.path;
 
@@ -46,7 +48,8 @@ app.use((req, res, next) => {
             next();
             return;
         }
-
+		
+		//307 - Temporary Redirect
         res.writeHead(307, {Location: '/'});
         res.end();
         return;
