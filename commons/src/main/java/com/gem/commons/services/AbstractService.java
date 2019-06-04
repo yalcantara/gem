@@ -33,15 +33,74 @@ public abstract class AbstractService<E> {
     private String jpql_select(){
         String jpql;
 
+        //Intened empty last character, for appending more statements
         jpql = "select e ";
-        jpql += "from " + entityName + " e";
+        jpql += "from " + entityName + " e ";
 
         return jpql;
+    }
+
+    public long count(){
+        return count(null, null);
+    }
+
+    protected long count(String condition, String name, Object value){
+        return count(condition, whereParams(name, value));
+    }
+
+    protected long count(String condition, Params params){
+
+        if(condition == null && params != null){
+            throw new IllegalArgumentException("If the condition parameter " +
+                    "is null, then the params argument must be null as well.");
+        }
+
+        if(condition != null && params == null){
+            throw new IllegalArgumentException("If the condition parameter " +
+                    "is not null, then the params argument must not be " +
+                    "null as well.");
+        }
+
+        String jpql;
+
+        jpql = "select count(e) ";
+        jpql += "from " + entityName + " e ";
+
+        if(condition != null){
+            jpql += "where " + condition;
+        }
+
+        Query q = em.createQuery(jpql);
+        q.setMaxResults(1);
+
+        if(params != null){
+            setParams(q, params);
+        }
+
+        long count = ((Number)q.getSingleResult()).longValue();
+
+        return count;
+    }
+
+    protected boolean exist(String condition, String name, Object value){
+        //it shouldn't be higher than 1 but, it let's do it this way
+        //in there is some data incongruencies.
+        return count(condition, name, value) >= 1;
+    }
+
+    protected boolean exist(String condition, Params params){
+        return count(condition, params) >= 1;
+    }
+
+    public boolean exist(long id){
+        checkParamIsPositive("id", id);
+        return exist("e.id = :id", "id", id);
     }
 
     public List<E> list(){
 
         String jpql = jpql_select();
+        jpql += "order by e.id asc";
 
         Query q = em.createQuery(jpql);
         return resultList(q);
@@ -104,6 +163,10 @@ public abstract class AbstractService<E> {
         return resultList(whereQuery(condition, whereParams(name, value)));
     }
 
+    protected E whereSingle(String condition, String name, Object value){
+        return whereSingle(condition, whereParams(name, value));
+    }
+
     protected E whereSingle(String condition, Params params){
         checkParamNotNull("condition", condition);
 
@@ -116,17 +179,21 @@ public abstract class AbstractService<E> {
 
         String jpql = jpql_select();
 
-        jpql += " where " + condition;
+        jpql += "where " + condition;
 
         Query q = em.createQuery(jpql);
+        setParams(q, params);
+
+        return q;
+    }
+
+    private void setParams(Query q, Params params){
         for (Map.Entry<String, Object> entry:params.entrySet()){
             String key = entry.getKey();
             Object val = entry.getValue();
 
             q.setParameter(key, val);
         }
-
-        return q;
     }
 
     protected E resultSingle(Query q){

@@ -2,6 +2,7 @@ package com.gem.commons.rest;
 
 import com.gem.commons.TxResult;
 
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -15,6 +16,22 @@ public class AbstractController {
 
     @Context
     protected UriInfo info;
+
+
+    protected void checkPathParam(String name, Object value) {
+
+        if (value == null) {
+            String msg = "The segment '" + name + "' was not specified in the URL path.";
+            throw new BadRequestException(msg);
+        }
+    }
+
+    protected void checkPathParamIsPositive(String name, long value) {
+        if (value < 0) {
+            throw new IllegalArgumentException(
+                    "The segment '" + name + "' must be positive. Got: " + value + ".");
+        }
+    }
 
     protected URI locationForPost(String id) {
         UriBuilder b = info.getAbsolutePathBuilder();
