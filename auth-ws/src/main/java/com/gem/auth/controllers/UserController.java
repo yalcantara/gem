@@ -63,10 +63,12 @@ public class UserController extends AbstractController {
         Long realmId = data.getLong("realmId");
         String name = data.getString("name");
         String pass = data.getString("pass");
+        String createdBy = data.getString("createdBy");
 
         User user = new User();
         user.setName(name);
         user.setPass(pass);
+        user.setCreatedBy(createdBy);
 
         srv.post(realmId, user);
 
