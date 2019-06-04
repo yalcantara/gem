@@ -2,16 +2,16 @@ package com.gem.auth.services;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-import javax.ws.rs.BadRequestException;
+import javax.ws.rs.*;
 
 import static com.gem.commons.Checker.checkParamNotNull;
+import static com.gem.commons.Utils.strip;
 
 public class Verifier {
 
     public static void checkUserName(String name) {
         checkParamNotNull("name", name);
-
-        name = name.strip().toLowerCase();
+        name = name.toLowerCase();
 
         if(name.length() < 3){
             throw new BadRequestException("The user name must be at least 6 characters long.");
@@ -77,5 +77,20 @@ public class Verifier {
         }
 
         //---------------------------------------------------------------------
+    }
+
+
+    public static void checkPassword(String pass){
+        checkParamNotNull("pass", pass);
+
+        pass = strip(pass);
+
+        if(pass == null){
+            throw new BadRequestException("The password is required.");
+        }
+
+        if(pass.length() < 6){
+            throw new BadRequestException("The minimun password length is 6.");
+        }
     }
 }

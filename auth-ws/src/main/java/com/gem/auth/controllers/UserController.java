@@ -10,7 +10,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.List;
 
-@Path("/realms/{realmId}/users")
+@Path("/realms/ent/{realmId}/users")
 public class UserController extends AbstractController {
 
     @Inject
@@ -45,9 +45,11 @@ public class UserController extends AbstractController {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/ent/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@PathParam("realmId") long realmId, @PathParam("id") long id) {
+        checkPathParamIsPositive("realmId", realmId);
+        checkPathParamIsPositive("id", id);
 
         Json json = convert(srv.get(realmId, id));
 
