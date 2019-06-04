@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Generic Application Modules - Auth</title>
+
+
+    <!-- Generic Static Resources -->
+    <link rel="stylesheet" href="/static/vendors/botstrap/css/bootstrap.css">
+    <script type="text/javascript" src="/static/vendors/jquery.js"></script>
+    <script type="text/javascript" src="/static/vendors/popper.js"></script>
+    <script type="text/javascript" src="/static/vendors/botstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/vendors/babel.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
+
+
+    <!-- App scripts -->
+    <script type="text/javascript" src="/static/gem/utils.js"></script>
+    <script type="text/javascript" src="/static/gem/rest.js"></script>
+
+    <script type="text/babel" src="/static/gem/sec/login-form.js"></script>
+
+    <script type="text/babel">
+        ReactDOM.render(<LoginForm/>, document.getElementById('form-holder'));
+    </script>
+
+</head>
+<body style="display: flex; justify-content: center;">
+
+
+    <div class="border rounded" style="margin-top: 100px; padding: 10px 15px">
+        <span style="font-size: 20px; font-weight: bold;">Log in to Auth</span>
+        <div id="form-holder" style="width: 300px; margin-top: 20px;">
+                
+        </div>
+    </div>
+</body>
+</html>

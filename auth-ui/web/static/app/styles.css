@@ -1,0 +1,39 @@
+body, table{
+   font-size: 18px;
+}
+
+.table tbody tr td{
+    vertical-align: middle !important;
+ } 
+
+ .table tbody tr{
+    cursor: default;
+ } 
+
+ .table tbody tr:hover{
+    background-color: rgb(225, 255, 190);
+ } 
+
+ .table thead{
+    font-weight: bold;
+    text-align: center;
+ } 
+
+ .bold{
+    font-weight: bold;
+ }
+
+ .silk{
+     min-width: 16px;
+     min-height: 16px;
+     width: 16px;
+     height: 16px;
+ }
+
+ .silk-cross{
+     background-image: url('/static/icons/16x16/silk/cross.png');
+ }
+
+ .silk-pencil{
+    background-image: url('/static/icons/16x16/silk/pencil.png');
+}
