@@ -42,7 +42,7 @@ public class SecurityService extends AbstractService<InternalUser> {
         p.set("user", user);
         p.set("pass", sha256);
 
-        boolean ans = exist("e.name = :name and e.pass = :pass", p);
+        boolean ans = exist("e.name = :user and e.pass = :pass", p);
 
         return ans;
     }

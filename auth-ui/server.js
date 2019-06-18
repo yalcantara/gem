@@ -89,7 +89,7 @@ app.post('/rest/gem/sec/login', (req, res)=>{
 
         if(user && pass){
 
-            var url = 'http://localhost:' + backendPort + '/rest/config/sec/users/match';
+            var url = 'http://localhost:' + backendPort + '/rest/sec/match';
             var data = {user: user, pass: pass};
 
             request.post(url, {json: data}, function(error, res2, body){

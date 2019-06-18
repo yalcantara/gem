@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Cacheable(false)
-@Table(name = "users")
+@Table(name = "internal_users")
 public class InternalUser {
 
     @Id

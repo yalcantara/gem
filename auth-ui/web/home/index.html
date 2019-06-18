@@ -1,0 +1,65 @@
+<html>
+
+<head>
+
+
+    <!-- Generic Static Resources -->
+    <link rel="stylesheet" href="/static/vendors/botstrap/css/bootstrap.css">
+
+    <script type="text/javascript" src="/static/vendors/jquery.js"></script>
+    <script type="text/javascript" src="/static/vendors/popper.js"></script>
+    <script type="text/javascript" src="/static/vendors/botstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/vendors/babel.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-dom.development.js"></script>
+    <script type="text/javascript" src="/static/vendors/react/react-router-dom.js"></script>
+    <script type="text/javascript" src="/static/vendors/moment.js"></script>
+    <script type="text/javascript" src="/static/vendors/fontawesome.js"></script>
+
+     <!-- App scripts -->
+    <link rel="stylesheet" href="/static/app/styles.css">
+
+    <script type="text/javascript" src="/static/gem/utils.js"></script>
+    <script type="text/javascript" src="/static/gem/rest.js"></script>
+    <script type="text/babel" src="/static/gem/dialogs/confirm.js"></script>
+    
+    <script type="text/javascript" src="/static/app/validators.js"></script>
+    <script type="text/babel" src="/static/app/nav.js"></script>
+
+    <script type="text/babel" src="/static/app/new-app-dialog.js"></script>
+    <script type="text/babel" src="/static/app/edit-app-dialog.js"></script>
+    <script type="text/babel" src="/static/app/list-app-view.js"></script>
+
+    <script type="text/babel" src="/static/app/properties/list-prop-view.js"></script>
+    <script type="text/babel" src="/static/app/properties/new-prop-dialog.js"></script>
+    <script type="text/babel" src="/static/app/properties/edit-prop-dialog.js"></script>
+
+    <script type="text/babel" src="/static/app/keys/list-key-view.js"></script>
+    <script type="text/babel" src="/static/app/keys/new-key-dialog.js"></script>
+    <script type="text/babel" src="/static/app/keys/edit-key-dialog.js"></script>
+
+    <script type="text/babel" src="/static/app/app-router.js"></script>
+
+
+
+    <script type="text/babel">
+
+
+        ReactDOM.render(<ConfirmDialog/>, document.getElementById('confirm-dialog-holder'));
+
+        ReactDOM.render(<AppRouter/>, document.getElementById('app-holder'));
+
+
+        
+    </script>
+</head>
+
+
+<body style="display: flex; justify-content: center; padding-top: 50px;">
+
+
+    <div id="confirm-dialog-holder"></div>
+
+    <div id="app-holder" style="width: 1200px"></div>
+</body>
+</html>
