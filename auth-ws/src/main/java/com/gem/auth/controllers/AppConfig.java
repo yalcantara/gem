@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.*;
 
 @Component
-@ApplicationPath("rest")
+@ApplicationPath("rest/auth")
 public class AppConfig extends AbstractRestConfig {
 
 }

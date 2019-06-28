@@ -10,7 +10,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.List;
 
-@Path("/realms")
+@Path("/tenants/{id}/realms")
 public class RealmController extends AbstractController {
 
     @Inject
@@ -59,4 +59,7 @@ public class RealmController extends AbstractController {
 
         return Response.created(locationForPost(id)).build();
     }
+
+
+
 }

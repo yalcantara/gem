@@ -18,7 +18,7 @@ public class InternalUser {
     @Column(name = "pass", nullable = false, length = 64)
     private String pass;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "role", nullable = false)
     private String role;
 
     public InternalUser(){

@@ -16,6 +16,10 @@ public class Realm implements Serializable {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "tenant_id")
+    private Tenant tenant;
+
     @Basic
     @Column(name = "name", nullable = false, length = 45)
     private String name;
@@ -44,6 +48,13 @@ public class Realm implements Serializable {
         this.id = id;
     }
 
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
+    }
 
     public String getName() {
         return name;

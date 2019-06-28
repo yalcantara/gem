@@ -29,7 +29,9 @@ public class UserService extends AbstractService<User> {
 
 
     public List<User> list(String realm){
-        return where("e.realm.name = :realm", "realm", realm);
+        Params params = new Params();
+        params.set("realm.name", realm);
+        return where(params);
     }
 
     public User get(long realmId, long userId){
@@ -37,14 +39,10 @@ public class UserService extends AbstractService<User> {
         checkParamIsPositive("userId", userId);
 
         Params p = new Params();
-        p.set("realmId", realmId);
+        p.set("realm.id", realmId);
         p.set("userId", userId);
 
-        String jpql;
-        jpql = "e.realm.id = :realmId ";
-        jpql += "and e.id = :id";
-
-        return whereSingle(jpql, p);
+        return whereSingle(p);
     }
 
     private void validate(long realmId, User user){
@@ -79,7 +77,7 @@ public class UserService extends AbstractService<User> {
 
         //User.realm
         //---------------------------------------------------------------------
-        realmSrv.checkExist(realmId);
+        //realmSrv.checkExist(realmId);
         //---------------------------------------------------------------------
 
         //User.createdBy
@@ -113,6 +111,6 @@ public class UserService extends AbstractService<User> {
         user.setLastModifiedBy(null);
         user.setLastModifiedDate(null);
 
-        super.post(user);
+        super.doPost(user);
     }
 }
