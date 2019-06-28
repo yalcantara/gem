@@ -112,6 +112,14 @@ utils.formatDate = function(unixTime){
     return '';
 };
 
+
+utils.fromNow = function(unixTime){
+    if(unixTime){
+        return moment(new Date(unixTime)).fromNow();
+    }
+    return '';
+};
+
 utils.sortField = function(arr, field){
     if(arr){
         arr.sort((x, y) => {

@@ -71,7 +71,7 @@ options.preserveHeaderKeyCase = true;
 options.proxyTimeout = 30000;
 options.timeout = 30000;
 
-app.use('/rest/config',         proxy('/rest/config', options));
+app.use('/rest/auth',           proxy('/rest/auth', options));
 app.use('/',                    express.static('web'));
 app.use('/home',                express.static('web/home'));
 app.use('/home/',               express.static('web/home'));
@@ -89,19 +89,26 @@ app.post('/rest/gem/sec/login', (req, res)=>{
 
         if(user && pass){
 
-            var url = 'http://localhost:' + backendPort + '/rest/sec/match';
+            var url = 'http://localhost:' + backendPort + '/rest/auth/sec/match';
             var data = {user: user, pass: pass};
 
             request.post(url, {json: data}, function(error, res2, body){
+                if(typeof(res2) == 'undefined'){
+                    res.status(500).send('An error has occurred, please try again later.');
+                    return;
+                }
+
                 if(res2.statusCode == 200){
                     req.session.user = {name: user};
                     res.status(200).end();
-                }else{
+                }else if(res2.statusCode == 401){
                     res.status(401).send('Username and password does not match.');
+                }else{
+                    res.status(500).send('An error has occurred, please try again later.');
                 }
             });
         }else{
-            res.status(401).send('Username and password does not match.');
+            res.status(400).send('Credentials required.');
         }
     }, 1000);
 });
