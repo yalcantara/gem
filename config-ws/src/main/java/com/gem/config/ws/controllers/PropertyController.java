@@ -13,7 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-import static com.gem.commons.Checker.checkPathParam;
 
 @Component
 @Path("/apps/{app}/properties")

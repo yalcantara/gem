@@ -29,7 +29,7 @@ public class AppService {
 	@SuppressWarnings("unchecked")
 	public List<App> list() {
 
-		return apps.find();
+		return apps.list();
 	}
 	
 	public App get(String name) {
@@ -161,6 +161,6 @@ public class AppService {
 		checkParamNotNull("name", name);
 		
 		name = Verifier.checkId("name", name);
-		return apps.deleteMany("name", name);
+		return apps.deleteMany("name", name) > 0;
 	}
 }
