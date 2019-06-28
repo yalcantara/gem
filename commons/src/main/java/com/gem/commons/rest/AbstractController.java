@@ -45,6 +45,10 @@ public class AbstractController {
         return b.build();
     }
 
+    protected URI locationForPut(long id){
+        return locationForPut(String.valueOf(id));
+    }
+
     protected URI locationForPut(String name) {
         UriBuilder b = info.getAbsolutePathBuilder();
         String uri = b.build().toString();
@@ -59,6 +63,10 @@ public class AbstractController {
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected Response putResponse(long id){
+        return Response.noContent().location(locationForPut(id)).build();
     }
 
     protected Response putResponse(TxResult tx, String ans){

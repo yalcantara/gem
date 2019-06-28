@@ -4,13 +4,12 @@ package com.gem.commons.services;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
 import javax.ws.rs.*;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.gem.commons.Checker.checkParamIsPositive;
-import static com.gem.commons.Checker.checkParamNotNull;
+import static com.gem.commons.Checker.*;
 
 public abstract class AbstractService<E> {
 
@@ -40,61 +39,60 @@ public abstract class AbstractService<E> {
         return jpql;
     }
 
+    protected E getReference(long id){
+        return em.getReference(entityClass, id);
+    }
+
     public long count(){
-        return count(null, null);
-    }
-
-    protected long count(String condition, String name, Object value){
-        return count(condition, whereParams(name, value));
-    }
-
-    protected long count(String condition, Params params){
-
-        if(condition == null && params != null){
-            throw new IllegalArgumentException("If the condition parameter " +
-                    "is null, then the params argument must be null as well.");
-        }
-
-        if(condition != null && params == null){
-            throw new IllegalArgumentException("If the condition parameter " +
-                    "is not null, then the params argument must not be " +
-                    "null as well.");
-        }
 
         String jpql;
-
         jpql = "select count(e) ";
-        jpql += "from " + entityName + " e ";
-
-        if(condition != null){
-            jpql += "where " + condition;
-        }
+        jpql += "from " + entityName +" e";
 
         Query q = em.createQuery(jpql);
         q.setMaxResults(1);
 
-        if(params != null){
-            setParams(q, params);
-        }
-
-        long count = ((Number)q.getSingleResult()).longValue();
+        long count = (Long)q.getSingleResult();
 
         return count;
     }
 
-    protected boolean exist(String condition, String name, Object value){
-        //it shouldn't be higher than 1 but, it let's do it this way
-        //in there is some data incongruencies.
-        return count(condition, name, value) >= 1;
+
+    protected long count(String name, Object val){
+        checkParamNotNull("name", name);
+        return count(whereParams(name, val));
     }
 
-    protected boolean exist(String condition, Params params){
-        return count(condition, params) >= 1;
+
+    protected long count(Params params){
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+
+        Root<E> root = cq.from(entityClass);
+        cq.select(cb.count(root));
+
+        TypedQuery<Long> q = whereQuery(cb, cq, params);
+        q.setMaxResults(1);
+
+        return q.getSingleResult();
+
+    }
+
+
+    protected boolean exist(String name, Object value){
+        //it shouldn't be higher than 1 but, it let's do it this way
+        //in there is some data incongruencies.
+        return count(name, value) >= 1;
+    }
+
+    protected boolean exist(Params params){
+        return count(params) >= 1;
     }
 
     public boolean exist(long id){
         checkParamIsPositive("id", id);
-        return exist("e.id = :id", "id", id);
+        return exist("id", id);
     }
 
     public List<E> list(){
@@ -117,18 +115,16 @@ public abstract class AbstractService<E> {
         return ent;
     }
 
-
-    protected E merge(E ent){
-        checkParamNotNull("ent", ent);
-
-        E ans = em.merge(ent);
-        em.flush();
-        detach(ans);
-
-        return ans;
+    protected E getBy(String name, Object value){
+        E ent = whereSingle("name", value);
+        if(ent == null){
+            throw new NotFoundException("Could not find the entity with field " + name +" and value " + value +".");
+        }
+        detach(ent);
+        return ent;
     }
 
-    protected void post(E ent){
+    protected void doPost(E ent){
         checkParamNotNull("ent", ent);
 
         em.persist(ent);
@@ -136,16 +132,16 @@ public abstract class AbstractService<E> {
         detach(ent);
     }
 
-    protected boolean delete(long id){
+    protected boolean doDelete(long id){
         checkParamIsPositive("id", id);
 
-        String jpql;
-        jpql = "delete ";
-        jpql += "from " + entityName +" e ";
-        jpql += "where e.id = :id";
+        CriteriaBuilder cb  = em.getCriteriaBuilder();
+        CriteriaDelete<E> query = cb.createCriteriaDelete(entityClass);
+        Root<E> root = query.from(entityClass);
+        query.where(cb.equal(root.get("id"), id));
 
-        Query q = em.createQuery(jpql);
-        q.setParameter("id", id);
+        Query q = em.createQuery(query);
+        q.setMaxResults(1);
         int ans = q.executeUpdate();
 
         return ans > 0;
@@ -157,32 +153,97 @@ public abstract class AbstractService<E> {
         return p;
     }
 
-    protected List<E> where(String condition, String name, Object value){
-        checkParamNotNull("condition", condition);
+    public List<E> where(Params params){
 
-        return resultList(whereQuery(condition, whereParams(name, value)));
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery cq = cb.createQuery(entityClass);
+
+        Root<E> root = cq.from(entityClass);
+        cq.select(root);
+
+        return resultList(whereQuery(cb, cq, params));
     }
 
-    protected E whereSingle(String condition, String name, Object value){
-        return whereSingle(condition, whereParams(name, value));
+    public List<E> where(String name, Object value){
+        return where(name, value, null);
     }
 
-    protected E whereSingle(String condition, Params params){
-        checkParamNotNull("condition", condition);
+    public List<E> where(String name, Object value, Integer maxResult){
+        checkParamNotNull("name", name);
 
-        return resultSingle(whereQuery(condition, params));
+        Params params = new Params();
+        params.set("name", value);
+
+        return where(params, maxResult);
     }
 
-    private Query whereQuery(String condition, Params params){
-        checkParamNotNull("condition", condition);
+    protected E whereSingle(String name, Object value){
+        checkParamNotNull("name", name);
+        Params params = new Params();
+        params.set(name, value);
+        return whereSingle(params);
+    }
+
+    protected E whereSingle(Params params){
+        List<E> list = where(params, 1);
+        return (list.size() > 0)?list.get(0):null;
+    }
+
+    protected List<E> where(Params params, Integer maxResults){
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery cq = cb.createQuery(entityClass);
+
+        Root<E> root = cq.from(entityClass);
+        cq.select(root);
+
+        return resultList(whereQuery(cb, cq, params), maxResults);
+    }
+
+    private <T> TypedQuery<T> whereQuery(CriteriaBuilder cb, CommonAbstractCriteria caq, Params params){
         checkParamNotNull("params", params);
+        checkParamHigherThan("params.size", 0, params.size());
 
-        String jpql = jpql_select();
+        Set<Map.Entry<String, Object>> entries = params.entrySet();
 
-        jpql += "where " + condition;
 
-        Query q = em.createQuery(jpql);
-        setParams(q, params);
+        Root<E> root;
+        if(caq instanceof CriteriaQuery){
+            CriteriaQuery cq = ((CriteriaQuery)caq);
+
+            root = cq.from(entityClass);
+        }else{
+            throw new UnsupportedOperationException("Criteria " + caq.getClass().getSimpleName() + " not suported.");
+        }
+
+        List<Predicate> pred = new ArrayList<>();
+        for(Map.Entry<String, Object> e:entries){
+
+            String name = e.getKey();
+            Object val = e.getValue();
+
+            Predicate and = cb.equal(root.get(name), val);
+            pred.add(and);
+        }
+
+        Predicate[] arr = new Predicate[pred.size()];
+        pred.toArray(arr);
+
+        if(caq instanceof CriteriaQuery){
+            CriteriaQuery cq = ((CriteriaQuery)caq);
+            cq.where(cb.and(arr));
+        }else{
+            throw new UnsupportedOperationException("Criteria " + caq.getClass().getSimpleName() + " not suported.");
+        }
+
+        TypedQuery<T> q;
+
+        if(caq instanceof CriteriaQuery) {
+            CriteriaQuery cq = ((CriteriaQuery)caq);
+            q = em.createQuery(cq);
+        }else{
+            throw new UnsupportedOperationException("Criteria " + caq.getClass().getSimpleName() + " not suported.");
+        }
 
         return q;
     }
@@ -224,7 +285,8 @@ public abstract class AbstractService<E> {
         }
 
         if(obj instanceof Collection){
-            for(Object e:(Collection)obj){
+            Collection col = (Collection) obj;
+            for(Object e:col){
                 em.detach(e);
             }
         }else{
