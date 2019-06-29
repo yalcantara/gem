@@ -2,13 +2,55 @@ package com.gem.commons;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 
+import static com.gem.commons.Checker.checkParamNotEmpty;
+import static com.gem.commons.Checker.checkParamNotNull;
+
 public class Utils {
 
+
+	public static boolean containsField(Class<?> clazz, String field){
+		checkParamNotNull("clazz", clazz);
+		checkParamNotEmpty("field", field);
+
+
+		Field[] arr = clazz.getDeclaredFields();
+		if(arr == null || arr.length == 0){
+			return false;
+		}
+
+		for(Field f:arr){
+			if(field.equals(f.getName())){
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	public static Class<?> getFieldType(Class<?> clazz, String field){
+		checkParamNotNull("clazz", clazz);
+		checkParamNotEmpty("field", field);
+
+		Field[] arr = clazz.getDeclaredFields();
+		if(arr == null || arr.length == 0){
+			return null;
+		}
+
+		for(Field f:arr){
+			if(field.equals(f.getName())){
+				return f.getType();
+			}
+		}
+
+		return null;
+	}
 
 	public static String strip(String str){
 		if(str == null){

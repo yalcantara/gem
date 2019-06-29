@@ -1,12 +1,17 @@
 package com.gem.commons.services;
 
 
+import com.gem.commons.Utils;
+import org.apache.commons.beanutils.BeanUtils;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.ws.rs.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static com.gem.commons.Checker.*;
@@ -16,9 +21,16 @@ public abstract class AbstractService<E> {
 
     public static final int DEFAULT_MAX_RESULTS = 1000;
 
+    private static final Class[] EMPTY_CLASS_ARRAY = new Class[]{};
+    private static final Object[] EMPTY_OBJECT_ARRAY = new Class[]{};
+
 
     @PersistenceContext
     protected EntityManager em;
+
+    protected final boolean tenant;
+    private final Class<?> tenantClass;
+    private final Constructor<?> tenantConstructor;
 
     protected final Class<E> entityClass;
     protected final String entityName;
@@ -27,44 +39,120 @@ public abstract class AbstractService<E> {
         checkParamNotNull("entityClass", entityClass);
         this.entityClass = entityClass;
         entityName = entityClass.getSimpleName();
+
+
+
+        MultiTenant a = this.getClass().getDeclaredAnnotation(MultiTenant.class);
+        if(a != null && Utils.containsField(entityClass, "tenant")){
+            tenant = true;
+
+            tenantClass = Utils.getFieldType(entityClass, "tenant");
+            if(tenantClass == null){
+                throw new RuntimeException("Could not obtain the type of the tenant field in " + entityName +".");
+            }
+
+            try {
+                tenantConstructor = tenantClass.getConstructor(EMPTY_CLASS_ARRAY);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+
+        }else if(a == null && Utils.containsField(entityClass, "tenant") == false){
+            tenant = false;
+
+
+
+            tenantClass = null;
+            tenantConstructor = null;
+        }else if(a == null){
+            throw new IllegalArgumentException("Incongruent Tenant declaration. " +
+                    "The @MultiTenant must be present on the service and the " +
+                    "field 'tenant' in the entity. Missing: @Tenant on service.");
+        }else{
+            throw new IllegalArgumentException("Incongruent Tenant declaration. " +
+                    "The @MultiTenant must be present on the service and the " +
+                    "field 'tenant' in the entity. Missing: tenant field on entity.");
+        }
     }
 
-    private String jpql_select(){
-        String jpql;
+    private void assignTenant(E ent){
 
-        //Intened empty last character, for appending more statements
-        jpql = "select e ";
-        jpql += "from " + entityName + " e ";
+        if(tenant == false){
+            return;
+        }
 
-        return jpql;
+        long tenantId = TenantHolder.getId();
+
+        Object tenantObj;
+        try {
+            tenantObj = tenantConstructor.newInstance(EMPTY_OBJECT_ARRAY);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        try {
+            BeanUtils.setProperty(tenantObj, "id", tenantId);
+            BeanUtils.setProperty(ent, "tenant", tenantObj);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected E getReference(long id){
         return em.getReference(entityClass, id);
     }
 
+    private void multiTenantPredicate(CriteriaBuilder cb, Root<E> root, List<Predicate> pred){
+        if(tenant) {
+            long tenantId = TenantHolder.getId();
+            Predicate tenantPred = cb.equal(root.get("tenant.id"), tenantId);
+
+            pred.add(tenantPred);
+        }
+    }
+
+    private <T> TypedQuery<T> queryFor(CriteriaBuilder cb, CriteriaQuery<T> cq, Root<E> root){
+
+        //Multi-Tenant
+        //=====================================================================
+        if(tenant) {
+            List<Predicate> pred = new ArrayList<>();
+            multiTenantPredicate(cb, root, pred);
+            Predicate[] arr = new Predicate[pred.size()];
+            pred.toArray(arr);
+            cq.where(arr);
+        }
+        //=====================================================================
+
+        return em.createQuery(cq);
+    }
+
+
     public long count(){
-
-        String jpql;
-        jpql = "select count(e) ";
-        jpql += "from " + entityName +" e";
-
-        Query q = em.createQuery(jpql);
-        q.setMaxResults(1);
-
-        long count = (Long)q.getSingleResult();
-
-        return count;
+        return __count(null);
     }
 
 
     protected long count(String name, Object val){
         checkParamNotNull("name", name);
-        return count(whereParams(name, val));
+        return __count(whereParams(name, val));
+    }
+
+    private long count(Params params){
+        checkParamNotNull("params", params);
+        checkParamHigherThan("params.size", 0, params.size());
+        return __count(params);
     }
 
 
-    protected long count(Params params){
+    private long __count(Params params){
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);
@@ -72,7 +160,12 @@ public abstract class AbstractService<E> {
         Root<E> root = cq.from(entityClass);
         cq.select(cb.count(root));
 
-        TypedQuery<Long> q = whereQuery(cb, cq, params);
+        TypedQuery<Long> q;
+        if(params == null){
+            q = queryFor(cb, cq, root);
+        }else{
+            q = whereQuery(cb, cq, params);
+        }
         q.setMaxResults(1);
 
         return q.getSingleResult();
@@ -97,17 +190,22 @@ public abstract class AbstractService<E> {
 
     public List<E> list(){
 
-        String jpql = jpql_select();
-        jpql += "order by e.id asc";
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery cq = cb.createQuery(entityClass);
 
-        Query q = em.createQuery(jpql);
-        return resultList(q);
+        Root<E> root = cq.from(entityClass);
+        cq.select(root);
+
+        TypedQuery<E> query = queryFor(cb, cq, root);
+
+        return resultList(query);
     }
 
     public E get(long id){
         checkParamIsPositive("id", id);
 
-        E ent = em.find(entityClass, id);
+
+        E ent = whereSingle("id", id);
         if(ent == null){
             throw new NotFoundException("Could not find the entity with id " + id +".");
         }
@@ -127,10 +225,16 @@ public abstract class AbstractService<E> {
     protected void doPost(E ent){
         checkParamNotNull("ent", ent);
 
+        //Multi-Tenant
+        //=====================================================================
+        assignTenant(ent);
+        //=====================================================================
+
         em.persist(ent);
         em.flush();
         detach(ent);
     }
+
 
     protected boolean doDelete(long id){
         checkParamIsPositive("id", id);
@@ -138,7 +242,21 @@ public abstract class AbstractService<E> {
         CriteriaBuilder cb  = em.getCriteriaBuilder();
         CriteriaDelete<E> query = cb.createCriteriaDelete(entityClass);
         Root<E> root = query.from(entityClass);
-        query.where(cb.equal(root.get("id"), id));
+
+        Predicate idPred = cb.equal(root.get("id"), id);
+
+
+        List<Predicate> pred = new ArrayList<>();
+        pred.add(idPred);
+
+        //Multi-Tenant
+        //=====================================================================
+        multiTenantPredicate(cb, root, pred);
+        //=====================================================================
+
+        Predicate[] arr = new Predicate[pred.size()];
+        pred.toArray(arr);
+        query.where(arr);
 
         Query q = em.createQuery(query);
         q.setMaxResults(1);
@@ -226,6 +344,13 @@ public abstract class AbstractService<E> {
             pred.add(and);
         }
 
+
+        //Multi-Tenant
+        //=====================================================================
+        multiTenantPredicate(cb, root, pred);
+        //=====================================================================
+
+
         Predicate[] arr = new Predicate[pred.size()];
         pred.toArray(arr);
 
@@ -246,15 +371,6 @@ public abstract class AbstractService<E> {
         }
 
         return q;
-    }
-
-    private void setParams(Query q, Params params){
-        for (Map.Entry<String, Object> entry:params.entrySet()){
-            String key = entry.getKey();
-            Object val = entry.getValue();
-
-            q.setParameter(key, val);
-        }
     }
 
     protected E resultSingle(Query q){

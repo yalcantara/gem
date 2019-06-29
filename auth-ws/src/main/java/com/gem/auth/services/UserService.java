@@ -3,6 +3,7 @@ package com.gem.auth.services;
 import com.gem.auth.entities.Realm;
 import com.gem.auth.entities.User;
 import com.gem.commons.services.AbstractService;
+import com.gem.commons.services.MultiTenant;
 import com.gem.commons.services.Params;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import static com.gem.commons.Checker.checkParamNotNull;
 import static com.gem.commons.Utils.strip;
 
 @Service
+@MultiTenant
 public class UserService extends AbstractService<User> {
 
     @Inject

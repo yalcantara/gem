@@ -17,6 +17,10 @@ public class User {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "tenant_id")
+    private Tenant tenant;
+
+    @ManyToOne
     @JoinColumn(name = "realm_id")
     private Realm realm;
 
@@ -61,6 +65,13 @@ public class User {
         this.id = id;
     }
 
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
+    }
 
     public Realm getRealm() {
         return realm;
