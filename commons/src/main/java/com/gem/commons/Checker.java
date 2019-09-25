@@ -28,15 +28,22 @@ public class Checker {
 		}
 	}
 
-	public static void checkParamHigherThan(String name, int threshold, int value) {
+	public static void checkParamHigherThan(String name, long threshold, long value) {
 		if (value <= threshold) {
 			throw new IllegalArgumentException("The parameter '" + name + "' must be higher than "
 					+ threshold + ", but got " + value + " instead.");
 		}
 	}
+
+	public static void checkParamEqualsOrHigherThan(String name, long threshold, long value) {
+		if (value < threshold) {
+			throw new IllegalArgumentException("The parameter '" + name + "' must be equals or higher than "
+					+ threshold + ", but got " + value + " instead.");
+		}
+	}
 	
 	public static void checkParamIsPositive(String name, long value) {
-		if (value < 0) {
+		if (value <= 0) {
 			throw new IllegalArgumentException(
 					"The parameter '" + name + "' must be positive. Got: " + value + ".");
 		}

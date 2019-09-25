@@ -1,6 +1,6 @@
 package com.gem.commons;
 
-public class ConfigurationException extends RuntimeException {
+public class ConfigurationException extends CommonsException {
 
 	private static final long serialVersionUID = -7308348064456802781L;
 	

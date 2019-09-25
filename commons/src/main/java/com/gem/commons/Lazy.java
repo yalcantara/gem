@@ -1,20 +1,22 @@
 package com.gem.commons;
 
-import static com.gem.commons.Checker.checkParamNotNull;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import static com.gem.commons.Checker.checkParamNotNull;
+
 public final class Lazy<T> {
 	
-	private volatile T obj;
+	private volatile T obj = null;
+	private volatile Long retrievalDate = null;
+
 	private final Object lock = new Object();
 	private final Retriever<T> ret;
 
 	public static <T> Lazy<T> wrap(Retriever<T> ret) {
-		return new Lazy<T>(ret);
+		return new Lazy<>(ret);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -51,21 +53,50 @@ public final class Lazy<T> {
 		this.ret = ret;
 	}
 
-	public T get() {
+	public Long getRetrievalDate(){
+		return retrievalDate;
+	}
 
-		T o = obj;
-		if (o == null) {
+	public T peek(){
+		return obj;
+	}
 
-			synchronized (lock) {
-				o = obj;
-				if (o == null) {
-					o = doRetrieve();
-					obj = o;
+	public T get(){
+		return get(false);
+	}
+
+	public T get(boolean force) {
+
+		T o;
+		if(force){
+			synchronized (lock){
+				o = doRetrieve();
+				retrievalDate = System.currentTimeMillis();
+				obj = o;
+			}
+		}else{
+			o = obj;
+			if (o == null) {
+
+				synchronized (lock) {
+					o = obj;
+					if (o == null) {
+						o = doRetrieve();
+						retrievalDate = System.currentTimeMillis();
+						obj = o;
+					}
 				}
 			}
 		}
 
 		return o;
+	}
+
+	public void reset(){
+		synchronized (lock){
+			obj = null;
+			retrievalDate = null;
+		}
 	}
 	
 	private T doRetrieve() {

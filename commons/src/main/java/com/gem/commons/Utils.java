@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
+import java.util.concurrent.TimeUnit;
 
 import static com.gem.commons.Checker.checkParamNotEmpty;
 import static com.gem.commons.Checker.checkParamNotNull;
@@ -100,6 +101,15 @@ public class Utils {
 		return String.valueOf(r);
 	}
 
+
+	public static void sleep(int duration, TimeUnit unit){
+
+		try {
+			unit.sleep(duration);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public static String toFlipedFormat(Instant date){
 		OffsetDateTime d = OffsetDateTime.ofInstant(date, ZoneOffset.UTC);

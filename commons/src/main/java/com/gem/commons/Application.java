@@ -76,7 +76,7 @@ public class Application {
 			return Integer.parseInt(val);
 		} catch (NumberFormatException ex) {
 			throw new ConfigurationException(
-					"Could not parse property '" + key + "' to an integer.", ex);
+					"Could not parse property '" + val + "' with key '" + key + "' to an integer.", ex);
 		}
 	}
 }
