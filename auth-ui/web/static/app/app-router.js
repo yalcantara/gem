@@ -53,9 +53,10 @@ class AppRouter extends React.Component{
             var tenant = utils.find(this.state.tenants, 'name', tenantName);
             if(tenant){
                 this.state.crtTenant = tenant;
+                var tenantId = tenant.id;
                 this.setState({crtApp: tenant});
                 if(utils.isEmpty(tenant.$realms)){
-                    rest.get('/rest/auth/tenants/by-name/' + tenantName + '/realms').then(function(res){
+                    rest.get('/rest/auth/tenants/ent/' + tenantId + '/realms').then(function(res){
                         var list = res.data;
                         utils.sortField(list, 'name');
                         tenant.$realms = list;

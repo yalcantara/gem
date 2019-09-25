@@ -4,13 +4,15 @@ import com.gem.auth.entities.Realm;
 import com.gem.auth.services.RealmService;
 import com.gem.commons.Json;
 import com.gem.commons.rest.AbstractController;
+import com.gem.commons.services.MultiTenantController;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.List;
 
-@Path("/tenants/{id}/realms")
+@Path("/tenants/ent/{id}/realms")
+@MultiTenantController
 public class RealmController extends AbstractController {
 
     @Inject

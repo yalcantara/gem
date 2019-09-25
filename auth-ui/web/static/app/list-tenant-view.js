@@ -53,6 +53,7 @@ class ListTenantView extends React.Component {
                             <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
+                    <td style={{textAlign: 'right'}}>{record.id}</td>
                     <td style={{paddingLeft: '15px', paddingRight: '15px'}}>
                         <ReactRouterDOM.Link to={'/tenants/' + record.name +'/realms'}>{record.name}</ReactRouterDOM.Link>
                     </td>
@@ -82,6 +83,7 @@ class ListTenantView extends React.Component {
                     <thead>
                         <tr>
                             <td style={{width: '60px'}}></td>
+                            <td>ID</td>
                             <td>Name</td>
                             <td>Label</td>
                             <td style={{minWidth: '160px'}}>Last Modified Date</td>

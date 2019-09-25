@@ -46,6 +46,7 @@ class ListRealmView extends React.Component{
                             <i onClick={()=>{self.remove(record)}} className="silk silk-cross" style={{cursor: 'pointer'}}></i>
                         </div>
                     </td>
+                    <td>{record.id}</td>
                     <td style={{paddingLeft: '15px', paddingRight: '15px', wordBreak: 'break-all'}}>
                         <ReactRouterDOM.Link to={'/tenants/' + tenant +'/realms/' +record.name + '/keys'}>{record.name}</ReactRouterDOM.Link>
                     </td>
@@ -75,6 +76,7 @@ class ListRealmView extends React.Component{
                     <thead>
                         <tr>
                             <td style={{width: '60px'}}></td>
+                            <td>ID</td>
                             <td>Name</td>
                             <td>Label</td>
                             <td style={{minWidth: '160px'}}>Last Update</td>
