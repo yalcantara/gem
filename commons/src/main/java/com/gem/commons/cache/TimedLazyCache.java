@@ -39,14 +39,14 @@ public class TimedLazyCache<K extends Serializable, V> {
 
 		TimedLazyCache<String, Integer> cache = new TimedLazyCache<>(ret, 5, 2, TimeUnit.SECONDS);
 
-		log.info("" + cache.get("pop"));
-		log.info("" + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
 		Utils.sleep(1, TimeUnit.SECONDS);
-		log.info("" + cache.get("pop"));
-		log.info("" + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
 		Utils.sleep(1, TimeUnit.SECONDS);
-		log.info("" + cache.get("pop"));
-		log.info("" + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
+		log.info(" " + cache.get("pop"));
 	}
 
 	private final ConcurrentHashMap<K, TimedLazy<V>> map;

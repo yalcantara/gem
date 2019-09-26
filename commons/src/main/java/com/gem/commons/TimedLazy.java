@@ -46,14 +46,13 @@ public final class TimedLazy<T> {
 		liveliness = (int) time;
 	}
 
-	public T peek() {
+	public Tuple<T, Long> peek() {
 		return lazy.peek();
 	}
 
 	public boolean isDead() {
 		return remaining() == 0;
 	}
-
 
 	public long remaining() {
 
@@ -80,11 +79,13 @@ public final class TimedLazy<T> {
 
 		synchronized (lock) {
 
-			Long snapshot = lazy.getRetrievalDate();
+			Tuple<T, Long> peek = lazy.peek();
 
-			if (snapshot == null) {
+			if (peek == null) {
 				return lazy.get(true);
 			}
+
+			long snapshot = peek.second();
 
 			var now = System.currentTimeMillis();
 			var diff = now - snapshot;
@@ -93,7 +94,7 @@ public final class TimedLazy<T> {
 				return lazy.get(true);
 			}
 
-			return lazy.peek();
+			return peek.first();
 		}
 	}
 

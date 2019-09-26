@@ -9,8 +9,7 @@ import static com.gem.commons.Checker.checkParamNotNull;
 
 public final class Lazy<T> {
 	
-	private volatile T obj = null;
-	private volatile Long retrievalDate = null;
+	private volatile Tuple<T, Long> obj = null;
 
 	private final Object lock = new Object();
 	private final Retriever<T> ret;
@@ -54,10 +53,11 @@ public final class Lazy<T> {
 	}
 
 	public Long getRetrievalDate(){
-		return retrievalDate;
+		final var crt = obj;
+		return (crt == null)? null : crt.second();
 	}
 
-	public T peek(){
+	public Tuple<T, Long> peek(){
 		return obj;
 	}
 
@@ -65,24 +65,34 @@ public final class Lazy<T> {
 		return get(false);
 	}
 
-	public T get(boolean force) {
+	public T get(boolean force){
+		return getTuple(force).first();
+	}
 
-		T o;
+	public Tuple<T, Long> getTuple(){
+		return getTuple(false);
+	}
+
+	public Tuple<T, Long> getTuple(boolean force){
+		return __internal_get(force);
+	}
+
+
+	private Tuple<T, Long> __internal_get(boolean force) {
+
+		Tuple<T, Long> o;
 		if(force){
 			synchronized (lock){
 				o = doRetrieve();
-				retrievalDate = System.currentTimeMillis();
 				obj = o;
 			}
 		}else{
 			o = obj;
 			if (o == null) {
-
 				synchronized (lock) {
 					o = obj;
 					if (o == null) {
 						o = doRetrieve();
-						retrievalDate = System.currentTimeMillis();
 						obj = o;
 					}
 				}
@@ -95,13 +105,14 @@ public final class Lazy<T> {
 	public void reset(){
 		synchronized (lock){
 			obj = null;
-			retrievalDate = null;
 		}
 	}
 	
-	private T doRetrieve() {
+	private Tuple<T, Long> doRetrieve() {
 		try {
-			return ret.retrieve();
+			T obj = ret.retrieve();
+			long retrievalDate = System.currentTimeMillis();
+			return new Tuple<T, Long>(obj, retrievalDate);
 		} catch (RuntimeException ex) {
 			throw ex;
 		} catch (Exception ex) {
