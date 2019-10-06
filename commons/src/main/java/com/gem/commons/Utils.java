@@ -1,5 +1,6 @@
 package com.gem.commons;
 
+import java.io.Closeable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -123,5 +124,16 @@ public class Utils {
 		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth())
 				+ " " + fill(d.getHour()) + ":" + fill(d.getMinute()) + ":" + fill(d.getSecond())
 				+ "." + millifill(d.get(ChronoField.MILLI_OF_SECOND));
+	}
+
+
+	public static void close(Closeable c) {
+		if (c != null) {
+			try {
+				c.close();
+			} catch (Exception ex) {
+				// ignored
+			}
+		}
 	}
 }
