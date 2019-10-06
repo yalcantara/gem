@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -41,7 +43,7 @@ public class Json implements Iterable<String>, Serializable {
 
     private static void config(ObjectMapper m) {
         SimpleModule gemModule = new SimpleModule("The GEM Jackson Module");
-        gemModule.addSerializer(ObjectId.class, ToStringSerializer.instance);
+        gemModule.addSerializer(ObjectId.class, new ToStringSerializer());
         gemModule.addSerializer(Json.class, new JsonSerializer());
         gemModule.addDeserializer(Json.class, new JsonDeserializer());
         m.registerModule(gemModule);
