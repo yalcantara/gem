@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -49,36 +50,48 @@ public class TimedLazyCache<K extends Serializable, V> {
 		log.info(" " + cache.get("pop"));
 	}
 
+	public static <K extends Serializable, V> TimedLazyCache<K, V> wrap(KeyRetriever<K, V> ret, int max, Duration duration){
+		checkParamNotNull("ret", ret);
+		checkParamIsPositive("max", max);
+		checkParamNotNull("duration", duration);
+		return new TimedLazyCache<K, V>(ret, max, duration.toMillis());
+	}
+
+
+	public static <K extends Serializable, V> TimedLazyCache<K, V> wrap(KeyRetriever<K, V> ret, int max, int duration, TimeUnit unit){
+		checkParamNotNull("ret", ret);
+		checkParamIsPositive("max", max);
+		checkParamIsPositive("duration", duration);
+		checkParamNotNull("unit", unit);
+		return new TimedLazyCache<K, V>(ret, max, duration, unit);
+	}
+
 	private final ConcurrentHashMap<K, TimedLazy<V>> map;
 
 	private final KeyRetriever<K, V> ret;
 	private final int max;
 
-	private final int duration;
-	private final TimeUnit unit;
 	private final int liveliness;
 
 	private final Timer timer;
 
-	public TimedLazyCache(KeyRetriever<K, V> ret, int max, int duration, TimeUnit unit) {
+	private TimedLazyCache(KeyRetriever<K, V> ret, int max, int duration, TimeUnit unit){
+		this(ret, max, unit.toMillis(duration));
+	}
+
+	private TimedLazyCache(KeyRetriever<K, V> ret, int max, long liveliness) {
 		checkParamNotNull("ret", ret);
 		checkParamIsPositive("max", max);
-		checkParamIsPositive("duration", duration);
-		checkParamNotNull("unit", unit);
 
-		long liveliness = unit.toMillis(duration);
+
 
 		if (liveliness > MAX_LIVELINESS) {
-			throw new IllegalArgumentException("The total time for " + unit + "(" + duration +
-					")" +
-					" " +
+			throw new IllegalArgumentException("The total liveliness time " + liveliness +
 					"is higher than 7 days.");
 		}
 
 		this.ret = ret;
 		this.max = max;
-		this.duration = duration;
-		this.unit = unit;
 		this.liveliness = (int) liveliness;
 		map = new ConcurrentHashMap<>();
 
@@ -98,7 +111,7 @@ public class TimedLazyCache<K extends Serializable, V> {
 	public V get(K key) {
 		Retriever<V> r = () -> ret.retrieve(key);
 
-		TimedLazy<V> lazy = TimedLazy.wrap(r, duration, unit);
+		TimedLazy<V> lazy = TimedLazy.wrap(r, liveliness);
 		TimedLazy<V> crt = map.putIfAbsent(key, lazy);
 		if (crt == null) {
 			return lazy.get();
