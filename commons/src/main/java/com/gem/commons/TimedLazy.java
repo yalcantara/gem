@@ -1,10 +1,10 @@
 package com.gem.commons;
 
 import java.sql.Time;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static com.gem.commons.Checker.checkParamEqualsOrHigherThan;
-import static com.gem.commons.Checker.checkParamNotNull;
+import static com.gem.commons.Checker.*;
 
 public final class TimedLazy<T> {
 
@@ -14,7 +14,20 @@ public final class TimedLazy<T> {
 	public static final int MAX_LIVELINESS = (int) TimeUnit.DAYS.toMillis(7);
 
 	public static <T> TimedLazy<T> wrap(Retriever<T> ret, int duration, TimeUnit unit) {
+		checkParamNotNull("unit", unit);
 		return new TimedLazy<>(ret, duration, unit);
+	}
+
+	public static <T> TimedLazy<T> wrap(Retriever<T> ret, Duration duration) {
+		checkParamNotNull("ret", ret);
+		checkParamNotNull("duration", duration);
+		return new TimedLazy<>(ret, duration);
+	}
+
+	public static <T> TimedLazy<T> wrap(Retriever<T> ret, long liveliness) {
+		checkParamNotNull("ret", ret);
+		checkParamNotNull("liveliness", liveliness);
+		return new TimedLazy<>(ret, liveliness);
 	}
 
 
@@ -23,23 +36,26 @@ public final class TimedLazy<T> {
 
 	private final Object lock = new Object();
 
-	private TimedLazy(Retriever<T> ret, int duration, TimeUnit unit) {
-		checkParamNotNull("ret", ret);
-		checkParamEqualsOrHigherThan("duration", 1, duration);
-		checkParamNotNull("unit", unit);
 
-		long time = unit.toMillis(duration);
+	private TimedLazy(Retriever<T> ret, Duration duration){
+		this(ret, duration.toMillis());
+	}
+
+	private TimedLazy(Retriever<T> ret, long amount, TimeUnit unit){
+		this(ret, unit.toMillis(amount));
+	}
+
+	private TimedLazy(Retriever<T> ret, long time) {
+		checkParamNotNull("ret", ret);
+		checkParamIsPositive("time", time);
 
 		if (time < MIN_LIVELINESS) {
-			throw new IllegalArgumentException("The minimum liveliness is 1 second. Got duration: "
-                    + duration + ", unit: " + unit + ".");
+			throw new IllegalArgumentException("The minimum liveliness is 1000 milli seconds. Got duration: "
+                    + time + ".");
 		}
 
 		if (time > MAX_LIVELINESS) {
-			throw new IllegalArgumentException("The total time for " + unit + "(" + duration +
-					")" +
-					" " +
-					"is higher than 7 days.");
+			throw new IllegalArgumentException("The total time for " + time + " is higher than 7 days.");
 		}
 
 		lazy = Lazy.wrap(ret);
