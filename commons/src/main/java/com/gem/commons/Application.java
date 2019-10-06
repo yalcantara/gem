@@ -15,68 +15,31 @@ public class Application {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private static final Lazy<Properties> props = Lazy.wrap(() -> {
-
-		Resource resource = new ClassPathResource("/application.properties");
-		Properties p = PropertiesLoaderUtils.loadProperties(resource);
-
-		Properties ans = new Properties();
-		for (Entry e : p.entrySet()) {
-
-			Object k = e.getKey();
-			Object v = e.getValue();
-
-			if (v instanceof String) {
-				v = ((String) v).strip();
-			}
-
-			ans.put(k, v);
-		}
-
-		return p;
+	private static final Lazy<Props> _props = Lazy.wrap(() -> {
+		return Props.fromClassPathResource("/application.properties");
 	});
-	
+
+	private static Props props(){
+		return _props.get();
+	}
+
 	public static void check(String key) {
-		checkParamNotNull("key", key);
-		String val = get(key);
-		if (val == null) {
-			throw new ConfigurationException("The property " + key + " is not defined.");
-		}
+		props().check(key);
 	}
-	
-	public static Properties get() {
-		return props.get();
-	}
-	
+
 	public static String get(String key) {
-		return get().getProperty(key);
+		return props().get(key);
 	}
 
 	public static String checkAndGet(String key) {
-		check(key);
-		return get(key);
+		return props().checkAndGet(key);
 	}
-	
+
 	public static String get(String key, String defaultValue) {
-		String val = get().getProperty(key);
-		if (val == null) {
-			return defaultValue;
-		}
-		
-		return val;
+		return props().get(key, defaultValue);
 	}
 
 	public static Integer getInteger(String key, Integer defaultValue) {
-		String val = get().getProperty(key);
-		if (val == null) {
-			return defaultValue;
-		}
-		
-		try {
-			return Integer.parseInt(val);
-		} catch (NumberFormatException ex) {
-			throw new ConfigurationException(
-					"Could not parse property '" + val + "' with key '" + key + "' to an integer.", ex);
-		}
+		return props().getInteger(key, defaultValue);
 	}
 }
