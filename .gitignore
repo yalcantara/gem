@@ -13,6 +13,10 @@
 # Windows image file caches
 Thumbs.db
 
+
+#Mac
+*.DS_Store
+
 ######################
 # Intellij
 ######################
