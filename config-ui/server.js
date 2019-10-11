@@ -75,6 +75,7 @@ app.use('/home',                express.static('web/home'));
 app.use('/home/',               express.static('web/home'));
 app.use('/static',              express.static('web/static'));
 app.use('/static/',             express.static('web/static'));
+app.use('/static/gem/',         express.static('../commons-js/'));
 app.use('/rest/gem/sec/login',  bodyParser.json());
 
 
