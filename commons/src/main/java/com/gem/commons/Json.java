@@ -227,17 +227,24 @@ public class Json implements Iterable<String>, Serializable {
         map = new LinkedHashMap<>();
     }
 
+    private Json(Map map){
+        this(map, true);
+    }
+
     @SuppressWarnings("rawtypes")
-    public Json(Map map) {
-        this.map = new LinkedHashMap<>();
+    private Json(Map map, boolean copy) {
+        if(copy){
+            this.map = new LinkedHashMap<>();
+            for (Object raw : map.entrySet()) {
+                Entry e = (Entry) raw;
 
-        for (Object raw : map.entrySet()) {
-            Entry e = (Entry) raw;
+                String key = String.valueOf(e.getKey());
+                Object val = e.getValue();
 
-            String key = String.valueOf(e.getKey());
-            Object val = e.getValue();
-
-            put(key, val);
+                put(key, val);
+            }
+        }else{
+            this.map = map;
         }
     }
 
@@ -353,6 +360,24 @@ public class Json implements Iterable<String>, Serializable {
         }
     }
 
+
+    public boolean containsKey(String key){
+        checkParamNotNull("key", key);
+        return map.containsKey(key);
+    }
+
+    public boolean isField(String key, boolean val){
+        if(containsKey(key) == false){
+            return false;
+        }
+        Object a = getBoolean(key);
+        if(a == null){
+            return true;
+        }
+
+        return a.equals(val);
+    }
+
     public Integer getInt(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
@@ -371,16 +396,38 @@ public class Json implements Iterable<String>, Serializable {
         return ((Number) val).longValue();
     }
 
+    public Long getDouble(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        if(val == null){
+            return null;
+        }
+        return ((Number) val).longValue();
+    }
+
     public String getString(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
         return (String) val;
     }
 
+
+    public Boolean getBoolean(String key){
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return (Boolean) val;
+    }
+
     public Object getObject(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
         return val;
+    }
+
+    public Json getJson(String key){
+        checkParamNotNull("key", key);
+        Map val = (Map)map.get(key);
+        return new Json(val, false);
     }
 
     public List getList(String key) {

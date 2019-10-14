@@ -79,7 +79,7 @@ public class Props {
 		checkParamNotNull("key", key);
 		String val = get(key);
 		if (val == null) {
-			throw new ConfigurationException("The property " + key + " is not defined.");
+			throw new ConfigurationException("The property '" + key + "' is not defined.");
 		}
 	}
 
