@@ -14,20 +14,16 @@ import java.util.Map;
 
 import static com.gem.commons.Checker.checkParamNotNull;
 
-public class CollectionImpl implements Collection {
+public class CollectionImpl<E> implements Collection<E> {
 	
 	@SuppressWarnings("rawtypes")
 	private final MongoCollection col;
 	
-	private final Class<?> _resultClass;
+	private final Class<E> _resultClass;
+
 	
 	@SuppressWarnings("rawtypes")
-	public CollectionImpl(MongoCollection col) {
-		this(col, Document.class);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public CollectionImpl(MongoCollection col, Class<?> resultClass) {
+	public CollectionImpl(MongoCollection col, Class<E> resultClass) {
 		checkParamNotNull("col", col);
 		checkParamNotNull("resultClass", resultClass);
 		this.col = col;
@@ -91,7 +87,7 @@ public class CollectionImpl implements Collection {
 	}
 	
 	@Override
-	public Object findOne(String filterKey, Object filterValue) {
+	public E findOne(String filterKey, Object filterValue) {
 		checkParamNotNull("filterKey", filterKey);
 		checkParamNotNull("filterValue", filterValue);
 		Query q = new Query();
@@ -102,11 +98,18 @@ public class CollectionImpl implements Collection {
 
 	
 	@Override
-	public Object findOne(ObjectId id) {
+	public E findOne(ObjectId id) {
 		checkParamNotNull("id", id);
 		Query q = new Query();
 		q.filter("_id", id);
 		return findOne(q, _resultClass);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public E findOne(Query query){
+		checkParamNotNull("query", query);
+		return findOne(query, _resultClass);
 	}
 	
 	@Override
