@@ -1,10 +1,12 @@
 package com.gem.commons.mongo;
 
+import javax.swing.text.Document;
+
 public interface MongoDB {
 	
-	public Collection getCollection(String name);
+	public Collection<Document> getCollection(String name);
 
-	public Collection getCollection(String name, Class<?> documentClass);
+	public <E> Collection<E> getCollection(String name, Class<E> documentClass);
 
 	public void printCollections();
 }

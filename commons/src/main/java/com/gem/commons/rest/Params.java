@@ -65,4 +65,10 @@ public class Params {
 	public Params clone(){
 		return new Params(map);
 	}
+
+
+	@Override
+	public String toString() {
+		return map.toString();
+	}
 }

@@ -21,23 +21,27 @@ import com.mongodb.client.MongoDatabase;
 public class Mongo implements Closeable {
 
 	private final Lazy<MongoClient> client;
-	
+
 	public static Collection proxyCollection(MongoDB db, String name, Class<?> documentClass) {
 		checkParamNotNull("db", db);
 		checkParamNotNull("name", name);
 		checkParamNotNull("documentClass", documentClass);
 		return Lazy.proxy(Collection.class, () -> db.getCollection(name, documentClass));
 	}
-	
+
 	private static MongoClientSettings settings() {
 		return settings(null);
 	}
-	
+
 	private static MongoClientSettings settings(String connectionString) {
+
 		CodecRegistry pojoCodecRegistry = CodecRegistries.fromRegistries(
-			MongoClientSettings.getDefaultCodecRegistry(),
-			CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-		
+				MongoClientSettings.getDefaultCodecRegistry(),
+				CodecRegistries.fromProviders(
+						PojoCodecProvider.builder().automatic(true).build(),
+				new EnumCodecProvider())
+		);
+
 		Builder b = MongoClientSettings.builder();
 		if (connectionString != null) {
 			b.applyConnectionString(new ConnectionString(connectionString));
@@ -45,55 +49,56 @@ public class Mongo implements Closeable {
 
 		MongoClientSettings settings = b.codecRegistry(pojoCodecRegistry).build();
 
+
 		return settings;
 	}
 
 	public Mongo() {
-		
+
 		client = Lazy.wrap(() -> MongoClients.create(settings()));
 	}
-	
+
 	public Mongo(int port) {
 		this("localhost", port);
 	}
-	
+
 	public Mongo(String host, int port) {
 		checkParamNotNull("host", host);
 		checkParamIsPositive("port", port);
-		
+
 		StringBuilder sb = new StringBuilder("mongodb://");
 		sb.append(host);
 		sb.append(":");
 		sb.append(port);
-		
+
 		String str = sb.toString();
 		client = Lazy.wrap(() -> MongoClients.create(settings(str)));
 	}
-	
+
 	public Mongo(String connectionString) {
 		checkParamNotNull("connectionString", connectionString);
 		client = Lazy.wrap(() -> MongoClients.create(settings(connectionString)));
 	}
-	
+
 	public MongoDB getDatabase(String name) {
 		checkParamNotNull("name", name);
-		MongoDatabase proxy = Lazy.proxy(MongoDatabase.class, () -> client.get().getDatabase(name));
+		MongoDatabase proxy = Lazy.proxy(MongoDatabase.class, () -> client().getDatabase(name));
 		return new MongoDBImpl(proxy);
 	}
-	
+
 	public void printDatabases() {
-		
+
 		Iterable<String> names = client.get().listDatabaseNames();
-		
+
 		Grid g = new Grid(names);
 		g.header(0, "Databases");
 		g.print();
 	}
-	
+
 	public MongoClient client() {
 		return client.get();
 	}
-	
+
 	@Override
 	public void close() {
 		client.get().close();

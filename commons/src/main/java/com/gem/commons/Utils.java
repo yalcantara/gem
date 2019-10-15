@@ -20,6 +20,9 @@ public class Utils {
 	public static void println(String str){
 		System.out.println(str);
 	}
+	public static void println(double val){
+		System.out.println(val);
+	}
 
 	public static void println(Json json){
 		System.out.println(json);
@@ -127,6 +130,11 @@ public class Utils {
 		return toFlipedFormat(d);
 	}
 
+
+	public static String toFlipedFormat(FieldDate d){
+		return toFlipedFormat(LocalDate.of(d.getYear(), d.getMonth(), d.getDay()));
+	}
+
 	public static String toFlipedFormat(OffsetDateTime d) {
 
 		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth())
@@ -139,6 +147,10 @@ public class Utils {
 		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth());
 	}
 
+
+	public static OffsetDateTime nowAtUTC(){
+		return OffsetDateTime.now(ZoneOffset.UTC);
+	}
 
 
 	public static void close(Closeable c) {
