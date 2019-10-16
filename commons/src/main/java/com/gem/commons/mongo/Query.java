@@ -1,6 +1,7 @@
 package com.gem.commons.mongo;
 
 import com.gem.commons.Json;
+import com.gem.commons.Sort;
 import com.mongodb.annotations.NotThreadSafe;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.gem.commons.Checker.checkParamNotEmpty;
 import static com.gem.commons.Checker.checkParamNotNull;
 
 @NotThreadSafe
@@ -91,6 +93,15 @@ public class Query implements Serializable {
 		fil().putAll(filter.toMap());
 	}
 
+	public void greaterThan(String field, Object val){
+
+		Document d = new Document();
+		d.put("$gt", val);
+
+		fil().put(field, d);
+
+	}
+
 	public void update(String field, Object val) {
 		
 		Document d = (Document) up().get("$set");
@@ -142,7 +153,24 @@ public class Query implements Serializable {
 	}
 
 	public void sort(String field){
-		srt().put(field, 1);
+		sort(field, Sort.ASC);
+	}
+
+	public void sort(String field, Sort direction){
+		if(direction == Sort.ASC){
+			srt().put(field, 1);
+		}else{
+			srt().put(field, -1);
+		}
+	}
+
+	public void sort(String[] fields, Sort direction){
+		checkParamNotNull("fields", fields);
+		checkParamNotNull("direction", direction);
+
+		for(String field:fields){
+			sort(field, direction);
+		}
 	}
 
 	public void addArrayFilter(Json json){

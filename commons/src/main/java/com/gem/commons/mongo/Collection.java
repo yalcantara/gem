@@ -10,21 +10,21 @@ import org.bson.types.ObjectId;
 
 import java.util.List;
 
-public interface Collection {
+public interface Collection<E> {
 	
 	int DEFAULT_LIMIT = 1000;
 	int DEFAULT_ROW_PRINT = 50;
 
 
-	default List list(){
+	default List<E> list(){
 		return MongoUtils.collect(find());
 	}
 
-	default List list(int max){
+	default List<E>  list(int max){
 		return MongoUtils.collect(find(max), max);
 	}
 
-	default List list(Query query){
+	default List<E>  list(Query query){
 		return MongoUtils.collect(find(query), query.getLimit());
 	}
 
@@ -43,11 +43,12 @@ public interface Collection {
 	
 	<T> FindIterable<T> find(Query query, Class<T> resultClass);
 	
-	Object findOne(ObjectId id);
+	E findOne(ObjectId id);
 	
-	Object findOne(String filterKey, Object filterValue);
+	E findOne(String filterKey, Object filterValue);
 
-	
+
+	public E findOne(Query query);
 	<T> T findOne(Query query, Class<T> resultClass);
 	
 
@@ -91,7 +92,7 @@ public interface Collection {
 	}
 
 
-	List aggregateAndCollect(PipeLine pipeline);
+	List<E> aggregateAndCollect(PipeLine pipeline);
 
 	List aggregateAndCollect(PipeLine pipeline, Integer maxValue);
 

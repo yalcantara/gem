@@ -8,7 +8,7 @@ const MemoryStore   = require('memorystore')(session);
 const proxy         = require('http-proxy-middleware');
 
 const app           = express();
-const port          = 4000;
+const port          = 4001;
 const backendPort   = 8080;
 
 app.set('x-powered-by', false);

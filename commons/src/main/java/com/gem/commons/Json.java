@@ -227,17 +227,24 @@ public class Json implements Iterable<String>, Serializable {
         map = new LinkedHashMap<>();
     }
 
+    private Json(Map map){
+        this(map, true);
+    }
+
     @SuppressWarnings("rawtypes")
-    public Json(Map map) {
-        this.map = new LinkedHashMap<>();
+    private Json(Map map, boolean copy) {
+        if(copy){
+            this.map = new LinkedHashMap<>();
+            for (Object raw : map.entrySet()) {
+                Entry e = (Entry) raw;
 
-        for (Object raw : map.entrySet()) {
-            Entry e = (Entry) raw;
+                String key = String.valueOf(e.getKey());
+                Object val = e.getValue();
 
-            String key = String.valueOf(e.getKey());
-            Object val = e.getValue();
-
-            put(key, val);
+                put(key, val);
+            }
+        }else{
+            this.map = map;
         }
     }
 
@@ -261,78 +268,86 @@ public class Json implements Iterable<String>, Serializable {
         throw new IllegalArgumentException("Unsupported value type: " + val.getClass().getName());
     }
 
-    public void put(String key, Object val) {
+    public Json put(String key, Object val) {
         checkAllowed(val);
 
         if (val == null) {
             put(key, (String) null);
-            return;
+            return this;
         }
 
         if (val instanceof Integer) {
             put(key, (Integer) val);
-            return;
+            return this;
         }
 
         if (val instanceof Long) {
             put(key, (Long) val);
-            return;
+            return this;
         }
 
         if (val instanceof ObjectId) {
             put(key, (ObjectId) val);
-            return;
+            return this;
         }
 
         if (val instanceof Json) {
             put(key, (Json) val);
-            return;
+            return this;
         }
 
-
+        return this;
     }
 
-    public void put(String key, Integer val) {
+    public Json put(String key, Integer val) {
         checkParamNotNull("key", key);
         map.put(key, val);
+        return this;
     }
 
-    public void put(String key, Long val) {
+    public Json put(String key, Long val) {
         checkParamNotNull("key", key);
         map.put(key, val);
+        return this;
     }
 
-    public void put(String key, String val) {
+    public Json put(String key, String val) {
         checkParamNotNull("key", key);
         map.put(key, val);
+        return this;
     }
 
-    public void put(String key, Json val) {
+    public Json put(String key, Json val) {
         checkParamNotNull("key", key);
         if (val == null) {
             map.put(key, null);
         } else {
             map.put(key, val.toMap());
         }
+
+        return this;
     }
 
-    public void put(String key, Instant val) {
+    public Json put(String key, Instant val) {
         Date date = (val == null)?null:Date.from(val);
         put(key, date);
+        return this;
     }
 
-    public void put(String key, Date val) {
+    public Json put(String key, Date val) {
         checkParamNotNull("key", key);
         map.put(key, val);
+        return this;
     }
 
 
-    public void put(String key, ObjectId val) {
+    public Json put(String key, ObjectId val) {
         checkParamNotNull("key", key);
         map.put(key, val);
+        return this;
     }
 
-    public void put(String key, List arr) {
+    public Json put(String key, List arr) {
         checkParamNotNull("key", key);
         if (arr == null) {
             map.put(key, null);
@@ -351,6 +366,26 @@ public class Json implements Iterable<String>, Serializable {
             }
             map.put(key, l);
         }
+
+        return this;
+    }
+
+
+    public boolean containsKey(String key){
+        checkParamNotNull("key", key);
+        return map.containsKey(key);
+    }
+
+    public boolean isField(String key, boolean val){
+        if(containsKey(key) == false){
+            return false;
+        }
+        Object a = getBoolean(key);
+        if(a == null){
+            return true;
+        }
+
+        return a.equals(val);
     }
 
     public Integer getInt(String key) {
@@ -371,16 +406,38 @@ public class Json implements Iterable<String>, Serializable {
         return ((Number) val).longValue();
     }
 
+    public Double getDouble(String key) {
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        if(val == null){
+            return null;
+        }
+        return ((Number) val).doubleValue();
+    }
+
     public String getString(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
         return (String) val;
     }
 
+
+    public Boolean getBoolean(String key){
+        checkParamNotNull("key", key);
+        Object val = map.get(key);
+        return (Boolean) val;
+    }
+
     public Object getObject(String key) {
         checkParamNotNull("key", key);
         Object val = map.get(key);
         return val;
+    }
+
+    public Json getJson(String key){
+        checkParamNotNull("key", key);
+        Map val = (Map)map.get(key);
+        return new Json(val, false);
     }
 
     public List getList(String key) {

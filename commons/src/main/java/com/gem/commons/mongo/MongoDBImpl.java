@@ -23,7 +23,7 @@ public class MongoDBImpl implements MongoDB {
 	}
 	
 	@Override
-	public Collection getCollection(String name, Class<?> documentClass) {
+	public <E> Collection<E> getCollection(String name, Class<E> documentClass) {
 		Collection proxy = Lazy.proxy(Collection.class,
 			() -> new CollectionImpl(db.getCollection(name, documentClass), documentClass));
 		return proxy;

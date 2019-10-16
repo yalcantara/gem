@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
@@ -14,6 +15,18 @@ import static com.gem.commons.Checker.checkParamNotEmpty;
 import static com.gem.commons.Checker.checkParamNotNull;
 
 public class Utils {
+
+
+	public static void println(String str){
+		System.out.println(str);
+	}
+	public static void println(double val){
+		System.out.println(val);
+	}
+
+	public static void println(Json json){
+		System.out.println(json);
+	}
 
 
 	public static boolean containsField(Class<?> clazz, String field){
@@ -117,13 +130,26 @@ public class Utils {
 		return toFlipedFormat(d);
 	}
 
+
+	public static String toFlipedFormat(FieldDate d){
+		return toFlipedFormat(LocalDate.of(d.getYear(), d.getMonth(), d.getDay()));
+	}
+
 	public static String toFlipedFormat(OffsetDateTime d) {
 
-
-		
 		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth())
 				+ " " + fill(d.getHour()) + ":" + fill(d.getMinute()) + ":" + fill(d.getSecond())
 				+ "." + millifill(d.get(ChronoField.MILLI_OF_SECOND));
+	}
+
+
+	public static String toFlipedFormat(LocalDate d) {
+		return d.getYear() + "-" + fill(d.getMonth().getValue()) + "-" + fill(d.getDayOfMonth());
+	}
+
+
+	public static OffsetDateTime nowAtUTC(){
+		return OffsetDateTime.now(ZoneOffset.UTC);
 	}
 
 
