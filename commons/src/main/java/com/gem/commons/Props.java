@@ -32,8 +32,12 @@ public class Props {
 	public static Props fromFile(String path){
 		Properties p = new Properties();
 		FileInputStream fis;
+		File f = new File(path);
+		if(f.exists() == false){
+			throw new RuntimeException("The file '" + f.getAbsolutePath() +"' does not exist.");
+		}
 		try {
-			File f = new File(path);
+
 			fis = new FileInputStream(f);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
