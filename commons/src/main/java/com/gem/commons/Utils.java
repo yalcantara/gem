@@ -4,17 +4,22 @@ import java.io.Closeable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import static com.gem.commons.Checker.checkParamNotEmpty;
 import static com.gem.commons.Checker.checkParamNotNull;
 
 public class Utils {
+
+	private static Pattern MARKS_PATTERN = Pattern
+			.compile("\\p{InCombiningDiacriticalMarks}+");
 
 
 	public static void println(String str){
@@ -65,6 +70,24 @@ public class Utils {
 		}
 
 		return null;
+	}
+
+	public static String steam(String str) {
+		if (str == null) {
+			return null;
+		}
+
+		str = str.strip();
+
+		str = str.replace("\r\n", "").replace('\n', '\0').trim();
+		if (str.isEmpty()) {
+			return "";
+		}
+
+		str = Normalizer.normalize(str, Normalizer.Form.NFD);
+		str = MARKS_PATTERN.matcher(str).replaceAll("");
+		str = str.toLowerCase();
+		return str;
 	}
 
 	public static String strip(String str){
