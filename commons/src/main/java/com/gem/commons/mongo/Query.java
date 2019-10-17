@@ -95,11 +95,54 @@ public class Query implements Serializable {
 
 	public void greaterThan(String field, Object val){
 
-		Document d = new Document();
-		d.put("$gt", val);
+		var f = (Document)fil().get(field);
+		if(f == null){
+			Document d = new Document();
+			d.put("$gt", val);
 
-		fil().put(field, d);
+			fil().put(field, d);
+		}else{
+			f.put("$gt", val);
+		}
+	}
 
+	public void greaterThanOrEquals(String field, Object val){
+
+		var f = (Document)fil().get(field);
+		if(f == null){
+			Document d = new Document();
+			d.put("$gte", val);
+
+			fil().put(field, d);
+		}else{
+			f.put("$gte", val);
+		}
+	}
+
+	public void lessThanOrEquals(String field, Object val){
+
+		var f = (Document)fil().get(field);
+		if(f == null){
+			Document d = new Document();
+			d.put("$lte", val);
+
+			fil().put(field, d);
+		}else{
+			f.put("$lte", val);
+		}
+	}
+
+	public void lessThan(String field, Object val){
+
+		var f = (Document)fil().get(field);
+		if(f == null){
+			Document d = new Document();
+			d.put("$lt", val);
+
+			fil().put(field, d);
+		}else{
+			f.put("$lt", val);
+		}
 	}
 
 	public void update(String field, Object val) {
