@@ -89,6 +89,15 @@ public class Query implements Serializable {
 		fil().put(field, val);
 	}
 
+	public void filter(String field, Json json){
+		var f = (Document)fil().get(field);
+
+		Document d = new Document();
+		d.putAll(json.toMap());
+
+		fil().put(field, d);
+	}
+
 	public void filter(Json filter) {
 		fil().putAll(filter.toMap());
 	}

@@ -28,6 +28,13 @@ public class Checker {
 		}
 	}
 
+	public static void checkParamLessThan(String name, long threshold, long value) {
+		if (value >= threshold) {
+			throw new IllegalArgumentException("The parameter '" + name + "' must be less than "
+					+ threshold + ", but got " + value + " instead.");
+		}
+	}
+
 	public static void checkParamHigherThan(String name, long threshold, long value) {
 		if (value <= threshold) {
 			throw new IllegalArgumentException("The parameter '" + name + "' must be higher than "

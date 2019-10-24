@@ -254,7 +254,7 @@ public class Json implements Iterable<String>, Serializable {
         }
 
         if (val instanceof String || val instanceof Number ||
-                val instanceof ObjectId || val instanceof Json || val instanceof Instant) {
+                val instanceof ObjectId || val instanceof Json || val instanceof Instant || val instanceof Boolean) {
             return true;
         }
 
@@ -273,6 +273,16 @@ public class Json implements Iterable<String>, Serializable {
 
         if (val == null) {
             put(key, (String) null);
+            return this;
+        }
+
+        if (val instanceof String) {
+            put(key, (String) val);
+            return this;
+        }
+
+        if (val instanceof Boolean) {
+            put(key, (Boolean) val);
             return this;
         }
 
@@ -296,7 +306,7 @@ public class Json implements Iterable<String>, Serializable {
             return this;
         }
 
-        return this;
+        throw new UnsupportedOperationException("No support for given type.");
     }
 
     public Json put(String key, Integer val) {
@@ -312,6 +322,12 @@ public class Json implements Iterable<String>, Serializable {
     }
 
     public Json put(String key, String val) {
+        checkParamNotNull("key", key);
+        map.put(key, val);
+        return this;
+    }
+
+    public Json put(String key, Boolean val) {
         checkParamNotNull("key", key);
         map.put(key, val);
         return this;

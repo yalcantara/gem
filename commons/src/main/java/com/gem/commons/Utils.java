@@ -25,6 +25,10 @@ public class Utils {
 	public static void println(String str){
 		System.out.println(str);
 	}
+
+	public static void println(Object obj){
+		System.out.println(obj);
+	}
 	public static void println(double val){
 		System.out.println(val);
 	}
