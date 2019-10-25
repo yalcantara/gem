@@ -147,7 +147,7 @@ public abstract class AbstractService<E> {
 
     private long count(Params params){
         checkParamNotNull("params", params);
-        checkParamHigherThan("params.size", 0, params.size());
+        checkParamGreatherThan("params.size", 0, params.size());
         return __count(params);
     }
 
@@ -320,7 +320,7 @@ public abstract class AbstractService<E> {
 
     private <T> TypedQuery<T> whereQuery(CriteriaBuilder cb, CommonAbstractCriteria caq, Params params){
         checkParamNotNull("params", params);
-        checkParamHigherThan("params.size", 0, params.size());
+        checkParamGreatherThan("params.size", 0, params.size());
 
         Set<Map.Entry<String, Object>> entries = params.entrySet();
 

@@ -35,14 +35,14 @@ public class Checker {
 		}
 	}
 
-	public static void checkParamHigherThan(String name, long threshold, long value) {
+	public static void checkParamGreatherThan(String name, long threshold, long value) {
 		if (value <= threshold) {
 			throw new IllegalArgumentException("The parameter '" + name + "' must be higher than "
 					+ threshold + ", but got " + value + " instead.");
 		}
 	}
 
-	public static void checkParamEqualsOrHigherThan(String name, long threshold, long value) {
+	public static void checkParamGreatherThanOrEquals(String name, long threshold, long value) {
 		if (value < threshold) {
 			throw new IllegalArgumentException("The parameter '" + name + "' must be equals or higher than "
 					+ threshold + ", but got " + value + " instead.");
