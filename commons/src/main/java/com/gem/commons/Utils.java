@@ -179,6 +179,9 @@ public class Utils {
 		return OffsetDateTime.now(ZoneOffset.UTC);
 	}
 
+	public static long epochMillis(int year, int month, int dayOfMonth){
+		return LocalDate.of(year, month, dayOfMonth).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+	}
 
 	public static void close(Closeable c) {
 		if (c != null) {
