@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-public class Json implements Iterable<String>, Serializable {
+public final class Json implements Iterable<String>, Serializable {
 
     private static final long serialVersionUID = -2237588925474667391L;
 
@@ -223,6 +223,10 @@ public class Json implements Iterable<String>, Serializable {
         this.map = map;
     }
 
+    public Json(Json other){
+        this(other.map, true);
+    }
+
     public Json() {
         map = new LinkedHashMap<>();
     }
@@ -402,6 +406,16 @@ public class Json implements Iterable<String>, Serializable {
         }
 
         return a.equals(val);
+    }
+
+
+    public boolean isJsonObject(String field){
+        var val = getObject(field);
+        if(val == null){
+            return false;
+        }
+
+        return (val instanceof Json || val instanceof Map);
     }
 
     public Integer getInt(String key) {

@@ -1,11 +1,14 @@
 package com.gem.commons.mongo;
 
 import com.gem.commons.Json;
+import com.gem.commons.Sort;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.gem.commons.Checker.checkParamNotEmpty;
 import static java.util.Map.Entry;
 
 public class PipeLine {
@@ -34,6 +37,21 @@ public class PipeLine {
 		list.add(doc);
 	}
 
+	private void _match(Json fields){
+		Document doc = new Document();
+
+		Document filter = new Document();
+		filter.putAll(fields.toMap());
+		doc.put("$match", filter);
+		list.add(doc);
+	}
+
+	public void match(Match match){
+		var doc = new Document();
+		doc.put("$match", match.toBson());
+		list.add(doc);
+	}
+
 	public void match(String field, String val) {
 		_match(field, val);
 	}
@@ -43,10 +61,29 @@ public class PipeLine {
 	}
 
 
-	public void project(Json fields){
-		Document doc = new Document();
+	public void sort(String field, Sort direction){
+		checkParamNotEmpty("field", field);
+		var doc = new Document();
+		var f = new Document();
+		if(direction == Sort.ASC) {
+			f.put(field, 1);
+		}else{
+			f.put(field, -1);
+		}
+		doc.put("$sort", f);
+		list.add(doc);
+	}
 
-		Document fd = new Document();
+	public void project(Project project){
+		var doc = new Document();
+		doc.put("$project", project.toBson());
+		list.add(doc);
+	}
+
+	public void project(Json fields){
+		var doc = new Document();
+
+		var fd = new Document();
 
 		fd.putAll(fields.toMap());
 
@@ -92,6 +129,13 @@ public class PipeLine {
 		options.put("preserveNullAndEmptyArrays", preserveNullAndEmptyArrays);
 
 		doc.put("$unwind", options);
+		list.add(doc);
+	}
+
+	public void group(Group group){
+		var doc = new Document();
+
+		doc.put("$group", group.toBson());
 		list.add(doc);
 	}
 
@@ -143,9 +187,9 @@ public class PipeLine {
 
 			Object v = entry.getValue();
 
-			sb.append("{");
+			sb.append("{\"");
 			sb.append(key);
-			sb.append(": ");
+			sb.append("\": ");
 
 			if(v instanceof Document){
 				sb.append(((Document) v).toJson());
