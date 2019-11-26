@@ -55,4 +55,11 @@ public class Checker {
 					"The parameter '" + name + "' must be positive. Got: " + value + ".");
 		}
 	}
+
+	public static void checkParamEquals(String name, long expected, long value) {
+		if (expected != value) {
+			throw new IllegalArgumentException(
+					"The parameter '" + name + "' must equals " + expected +". Got: " + value + ".");
+		}
+	}
 }
