@@ -52,6 +52,9 @@ public class Tensor3 implements Tensor {
 		data[idx] = val;
 	}
 
+	public float getAbs(int idx){
+		return data[idx];
+	}
 
 	private int absIdx(int x, int y, int z){
 		var d1 = shape.get(1);
@@ -94,5 +97,10 @@ public class Tensor3 implements Tensor {
 
 			g.print();
 		}
+	}
+
+
+	public String toString(){
+		return "Tensor3 " + shape();
 	}
 }
