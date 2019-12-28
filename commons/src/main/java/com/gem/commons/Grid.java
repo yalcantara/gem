@@ -292,8 +292,26 @@ public class Grid {
 
 		return str;
 	}
+	
+	private boolean shouldPrintHeader(){
+		if(header == null || header.size() == 0){
+			return false;
+		}
+		
+		for(var  i = 0; i < header.size(); i++){
+			if(header.get(i) != null){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private void print(Appendable out, int maxRows, int maxCols){
+		print(out, maxRows, maxCols, shouldPrintHeader());
+	}
 
-	private void print(Appendable out, int maxRows, int maxCols) {
+	private void print(Appendable out, int maxRows, int maxCols, boolean includeHeaders) {
 		int mr = (maxRows < rows) ? maxRows : rows;
 		int mc = (maxCols < cols) ? maxCols : cols;
 
@@ -322,28 +340,30 @@ public class Grid {
 				}
 			}
 
-			line(out, maxLength, mc);
-			out.append('\n');
-			// Headers
-			// =================================================================
-			for (int j = 0; j < mc; j++) {
-				if (j == 0) {
-					out.append("| ");
-				} else {
-					out.append(" ");
+			if(includeHeaders) {
+				// Headers
+				// =================================================================
+				line(out, maxLength, mc);
+				out.append('\n');
+				for (int j = 0; j < mc; j++) {
+					if (j == 0) {
+						out.append("| ");
+					} else {
+						out.append(" ");
+					}
+					String h = pack(header(j));
+					int leading = maxLength[j] - h.length();
+					
+					for (int s = 0; s < leading; s++) {
+						out.append(" ");
+					}
+					
+					out.append(h);
+					out.append(" |");
 				}
-				String h = pack(header(j));
-				int leading = maxLength[j] - h.length();
-
-				for (int s = 0; s < leading; s++) {
-					out.append(" ");
-				}
-
-				out.append(h);
-				out.append(" |");
+				// =================================================================
+				out.append('\n');
 			}
-			// =================================================================
-			out.append('\n');
 			line(out, maxLength, mc);
 			out.append('\n');
 			for (int i = 0; i < mr; i++) {
